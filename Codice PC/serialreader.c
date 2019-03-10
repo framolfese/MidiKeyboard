@@ -36,8 +36,8 @@
 		tcgetattr(fd, &SerialPortSettings);	/* Get the current attributes of the Serial port */
 
 		/* Setting the Baud rate */
-		cfsetispeed(&SerialPortSettings,B9600); /* Set Read  Speed as 9600                       */
-		cfsetospeed(&SerialPortSettings,B9600); /* Set Write Speed as 9600                       */
+		cfsetispeed(&SerialPortSettings,B19200); /* Set Read  Speed as 9600                       */
+		cfsetospeed(&SerialPortSettings,B19200); /* Set Write Speed as 9600                       */
 
 		/* 8N1 Mode */
 		SerialPortSettings.c_cflag &= ~PARENB;   /* Disables the Parity Enable bit(PARENB),So No Parity   */
@@ -62,7 +62,7 @@
 		if((tcsetattr(fd,TCSANOW,&SerialPortSettings)) != 0) /* Set the attributes to the termios structure*/
 		    printf("\n  ERROR ! in Setting attributes");
 		else
-                    printf("\n  BaudRate = 9600 \n  StopBits = 1 \n  Parity   = none");
+                    printf("\n  BaudRate = 19200 \n  StopBits = 1 \n  Parity   = none");
 			
 	        /*------------------------------- Read data from serial port -----------------------------*/
 
