@@ -11,17 +11,18 @@ int main(void){
   // we connect the switch to pin 12
   // that is the bit 6 of port b
   
-  const uint8_t mask=(1<<6);
+  const uint8_t mask=(1<<0);
   // we configure the pin as input, clearing the bit 6
-  DDRB &= ~mask;
+  DDRF &= ~mask;
   
   // we enable pullup resistor on that pin
-  PORTB |= mask;
+  PORTF |= mask;
   
   while(1){
-    int key=(PINB&mask)==0; // we extract the bit value of the 6th bit
-    printf("switch %02x, %d\n", (int) PORTB, key);
-    _delay_ms(500); // from delay.h, wait 1 sec
+    //int key=(PINF&mask)==0; // we extract the bit value of the 6th bit
+    //printf("switch %02x, %d\n", (int) PORTF, key);
+	printf("sono una BOARD\n");    
+_delay_ms(500); // from delay.h, wait 1 sec
   }
   
 }
