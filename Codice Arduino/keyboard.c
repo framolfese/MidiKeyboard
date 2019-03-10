@@ -5,10 +5,6 @@
 #include "../avr_common/uart.h" // this includes the printf and initializes it
 #include <keyboard.h>
 
-typedef struct Tone{
-    int value;
-} Tone;
-
 
 
 int main(void){
@@ -23,14 +19,23 @@ int main(void){
   PORTF |= mask;
   }
 
+  //initialize the ToneStruc Vector
+  Tone toneStructVector[8];
+  toneStructVector[2].value='F';
+  toneStructVector[3].value='M';
+  toneStructVector[4].value='R';
+  toneStructVector[5].value='D';
+
+
   while(1){
     for(i=2;i<6;i++){
     mask = (1<<i);
     int key=(PINF&mask)==0; 
     if(key!=0){
-      Tone toneRead;
-      toneRead->value=i;
-      printf("switch %02x, %d, sono la porta %d,\n", (int) PORTF, key,toneReaded->value);
+      
+      
+      printf("switch %02x, %d, sono la nota %c,\n", (int) PORTF, key,toneStructVector[i].value);
+      printf("la struct %p\n",toneStructVector[i]);
       }
     }
     _delay_ms(100); // from delay.h, wait 1 sec

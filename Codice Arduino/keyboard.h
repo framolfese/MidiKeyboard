@@ -1,5 +1,5 @@
 
 
 typedef struct Tone{
-    int value;
+    char value;
 } Tone;
