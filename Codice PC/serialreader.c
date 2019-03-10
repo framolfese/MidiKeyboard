@@ -4,7 +4,7 @@
 int main() {
     FILE* seriale = fopen("/dev/ttyACM0", "r"); 
     if (seriale == NULL) { 
-        printf("Couldn't open file"); 
+        printf("Couldn't open file\n"); 
         exit(0); 
     }
     while(1){

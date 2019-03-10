@@ -11,7 +11,7 @@ int main(void){
   // we connect the switch to pin 12
   // that is the bit 6 of port b
   
-  const uint8_t mask=(1<<0);
+  const uint8_t mask=(1<<2);
   // we configure the pin as input, clearing the bit 6
   DDRF &= ~mask;
   
