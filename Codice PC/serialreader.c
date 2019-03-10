@@ -68,19 +68,19 @@
 
 		tcflush(fd, TCIFLUSH);   /* Discards old data in the rx buffer            */
 		while(1){
-		char read_buffer[32];   /* Buffer to store the data received              */
-		int  bytes_read = 0;    /* Number of bytes read by the read() system call */
- 		int i = 0;
+			char read_buffer[32];   /* Buffer to store the data received              */
+			int  bytes_read = 0;    /* Number of bytes read by the read() system call */
+			int i = 0;
 
-		bytes_read = read(fd,&read_buffer,64); /* Read the data                   */
-			
-		printf("\n\n  Bytes Rxed -%d", bytes_read); /* Print the number of bytes read */
-		printf("\n\n  ");
+			bytes_read = read(fd,&read_buffer,64); /* Read the data                   */
+				
+			printf("\n\n  Bytes Rxed -%d", bytes_read); /* Print the number of bytes read */
+			printf("\n\n  ");
 
-		for(i=0;i<bytes_read;i++)	 /*printing only the received characters*/
-		    printf("%c",read_buffer[i]);
+			for(i=0;i<bytes_read;i++)	 /*printing only the received characters*/
+				printf("%c",read_buffer[i]);
 
-		printf("\n +----------------------------------+\n\n\n");
+			printf("\n +----------------------------------+\n\n\n");
 		
 		}
 		close(fd); /* Close the serial port */

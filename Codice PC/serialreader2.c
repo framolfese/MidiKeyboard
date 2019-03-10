@@ -28,7 +28,12 @@ int main(){
         perror("Errore nella tcsetattr");
         return -1;
     }
+    sleep(2);
     int n = read(fd, buf, 128);
+    int i;
+    for(i = 0; i < 127; i++){
+        printf("%c", buf[i]);
+    }
     close(fd);
     return 0;
 }
