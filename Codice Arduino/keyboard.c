@@ -6,23 +6,16 @@
 #include <keyboard.h>
 
 
-int SendToSerial(Tone tone)
+int SendToSerial(Tone *tone)
 {
 
     char buffer[sizeof(Tone)];
-    memcpy(buffer, &tone, sizeof(Tone));
+    memcpy(buffer, tone, sizeof(Tone));
     int i = 0;
-    for (i; i < sizeof(Tone); i++)
-        printf("%c",buffer[i]);
-    printf("\n");
-    /*
-  char *p = (char*) &tone;
-  int i;
-  for(i=0; i<sizeof(tone); i++) 
-   {
-   putcUSART(*p++);
-   }
-   */
+    for (i=sizeof(Tone)-1; i>=0 ; i--)
+    printf("%c",buffer[i]);
+   
+  
     return 0;
 }
 
@@ -44,9 +37,16 @@ int main(void)
   //initialize the ToneStruc Vector
   Tone toneStructVector[8];
   toneStructVector[2].value = 'F';
+  toneStructVector[2].marco = 1;
+ 
   toneStructVector[3].value = 'M';
+  toneStructVector[3].marco = 2;
+  
   toneStructVector[4].value = 'R';
+  toneStructVector[4].marco = 3;
+  
   toneStructVector[5].value = 'D';
+  toneStructVector[5].marco = 4;
 
   while (1)
   {
@@ -59,7 +59,8 @@ int main(void)
 
         //printf("switch %02x, %d, sono la nota %c,\n", (int) PORTF, key,toneStructVector[i].value);
         //printf("la struct %p\n",toneStructVector[i]);
-        SendToSerial(toneStructVector[i]);
+    
+        SendToSerial(&toneStructVector[i]);
       }
     }
     _delay_ms(100); // from delay.h, wait 1 sec

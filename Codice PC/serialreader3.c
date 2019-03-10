@@ -1,9 +1,11 @@
     #include <stdio.h>
     #include <stdlib.h>
+    #include "../Codice Arduino/keyboard.h"
+
      
     int main()
     {
-       char ch;
+       char ch[sizeof(Tone)];
        FILE *fp;
      
        fp = fopen("/dev/ttyACM0", "r"); // read mode
@@ -15,8 +17,12 @@
        }
      
        while(1){
-           ch = fgetc(fp);
-          printf("%c", ch);
+            int i = 0;
+            fread(ch,sizeof(Tone),1,fp);
+            Tone *test = (Tone*) ch;
+            printf("la nota è %c\n",test->value);
+            printf("la valore è %d\n",test->marco);           
+          
        }
          
      

@@ -2,8 +2,9 @@
 
 typedef struct Tone
 {
+    int marco;
     char value;
     
 } Tone;
 
-int SendToSerial(Tone tone);
+int SendToSerial(Tone *tone);
