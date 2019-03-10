@@ -5,6 +5,28 @@
 #include "../avr_common/uart.h" // this includes the printf and initializes it
 #include <keyboard.h>
 
+
+int SendToSerial(Tone tone)
+{
+
+    char buffer[sizeof(Tone)];
+    memcpy(buffer, &tone, sizeof(Tone));
+    int i = 0;
+    for (i; i < sizeof(Tone); i++)
+        printf("%c",buffer[i]);
+    printf("\n");
+    /*
+  char *p = (char*) &tone;
+  int i;
+  for(i=0; i<sizeof(tone); i++) 
+   {
+   putcUSART(*p++);
+   }
+   */
+    return 0;
+}
+
+
 int main(void)
 {
   // this initializes the printf/uart thingies

@@ -14,8 +14,11 @@
           exit(EXIT_FAILURE);
        }
      
-       while((ch = fgetc(fp)) != EOF)
+       while(1){
+           ch = fgetc(fp);
           printf("%c", ch);
+       }
+         
      
        fclose(fp);
        return 0;
