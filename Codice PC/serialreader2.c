@@ -31,8 +31,10 @@ int main(){
         return -1;
     }
     while(1){
-        if(read(fd, buf, sizeof(char)) == 0xAA){
-            if(read(fd, buf, sizeof(char)) == 0xBB){
+        read(fd, buf, sizeof(char));
+        if(buf[0] == 0xAA){
+            read(fd, buf, sizeof(char));
+            if(buf[0] == 0xBB){
                 read(fd, buf, sizeof(Prova));
                 for(i = 0; i < sizeof(Prova); i++){
                     printf("%c", buf[i]);
