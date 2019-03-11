@@ -9,12 +9,23 @@
 int SendToSerial(Tone *tone)
 {
 
-    char buffer[sizeof(Tone)];
+    char buffer[sizeof(Tone)+1];
+    
     memcpy(buffer, tone, sizeof(Tone));
+    //sinchro
+    printf("%c",0XAA);
+    printf("%c",0X55);
+    printf("%c",0XAA);
+    
+    //struct tone
     int i = 0;
-    for (i=sizeof(Tone)-1; i>=0 ; i--)
-    printf("%c",buffer[i]);
-   
+    for (i=sizeof(Tone)-1; i>=0 ; i--) printf("%c",buffer[i]);
+    
+    //checksum
+    printf("%c",0);
+    
+    //connection ended
+    printf("%c",0X55);
   
     return 0;
 }
@@ -37,16 +48,16 @@ int main(void)
   //initialize the ToneStruc Vector
   Tone toneStructVector[8];
   toneStructVector[2].value = 'F';
-  toneStructVector[2].marco = 1;
+  toneStructVector[2].some_value = 1;
  
   toneStructVector[3].value = 'M';
-  toneStructVector[3].marco = 2;
+  toneStructVector[3].some_value = 2;
   
   toneStructVector[4].value = 'R';
-  toneStructVector[4].marco = 3;
+  toneStructVector[4].some_value = 3;
   
   toneStructVector[5].value = 'D';
-  toneStructVector[5].marco = 4;
+  toneStructVector[5].some_value = 4;
 
   while (1)
   {
