@@ -67,7 +67,7 @@ int main(void)
             // cambiamento
             // trasmetti (lettura>>i)&0x01 che vale 0 o 1 alla pressione 
             SendToSerial(&toneStructVector[i]);
-            toneStructVector[5].some_value = (lettura>>i)&0x01;
+            toneStructVector[i].some_value = (lettura>>i)&0x01;
         }
     }
     
