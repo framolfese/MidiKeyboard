@@ -4,10 +4,12 @@
 #include <unistd.h> 
 #include <errno.h> 
 #include <string.h>
+#include "../00_hello_avr/hello_avr.h"
 
 int main(){
+    int i;
     int fd = open("/dev/ttyACM0", O_RDONLY);
-    char buf[128] = {0};
+    char buf[sizeof(Prova)];
     if(fd < 0)
         perror("Errore nell'apertura della seriale\n");
     struct termios tty;
@@ -28,11 +30,15 @@ int main(){
         perror("Errore nella tcsetattr");
         return -1;
     }
-    sleep(2);
-    int n = read(fd, buf, 128);
-    int i;
-    for(i = 0; i < 127; i++){
-        printf("%c", buf[i]);
+    while(1){
+        if(read(fd, buf, sizeof(char)) == 0xAA){
+            if(read(fd, buf, sizeof(char)) == 0xBB){
+                read(fd, buf, sizeof(Prova));
+                for(i = 0; i < sizeof(Prova); i++){
+                    printf("%c", buf[i]);
+                }
+            }
+        }
     }
     close(fd);
     return 0;
