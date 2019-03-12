@@ -9,7 +9,9 @@
 int main(){
     int i;
     int fd = open("/dev/ttyACM0", O_RDONLY);
+    printf("ao");
     char buf[sizeof(Prova)];
+    char ciao;
     if(fd < 0)
         perror("Errore nell'apertura della seriale\n");
     struct termios tty;
@@ -30,15 +32,15 @@ int main(){
         perror("Errore nella tcsetattr");
         return -1;
     }
+    printf("ao");
     while(1){
-        read(fd, buf, sizeof(char));
-        if(buf[0] == 0xAA){
-            read(fd, buf, sizeof(char));
-            if(buf[0] == 0xBB){
+        printf("ciao");
+        read(fd, &ciao, sizeof(char));
+        if(ciao == 0xAA){
+            read(fd, &ciao, sizeof(char));
+            if(ciao == 0xBB){
                 read(fd, buf, sizeof(Prova));
-                for(i = 0; i < sizeof(Prova); i++){
-                    printf("%c", buf[i]);
-                }
+                printf("%c", ((Prova*)buf)->value);
             }
         }
     }
