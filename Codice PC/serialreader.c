@@ -10,7 +10,6 @@ int main(int argc, char **argv)
   int attrib_ok = serial_set_interface_attribs(fd, B19200, 0);
   serial_set_blocking(fd, 1);
   printf("attr: %d\n", attrib_ok);
-<<<<<<< HEAD
   unsigned char buffer[sizeof(Tone)];
   while (1)
   {
@@ -39,13 +38,6 @@ int main(int argc, char **argv)
         //printf("letto %02x\n", (unsigned int)c);
       }
     }
-=======
-  while (1){
-      unsigned char c ;
-      read(fd,&c,1);
-      printf("%02x\n",(unsigned char) c);
-      if( c == 0xaa) printf("olle");
->>>>>>> 02cb1954f5b4fa20fd0b0922fee59d9f9f19907c
   }
 }
 
