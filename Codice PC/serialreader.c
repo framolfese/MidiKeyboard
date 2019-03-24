@@ -10,14 +10,34 @@ int main(int argc, char **argv)
   int attrib_ok = serial_set_interface_attribs(fd, B19200, 0);
   serial_set_blocking(fd, 1);
   printf("attr: %d\n", attrib_ok);
-  while (1){
-      char *buffer;
-      read(fd, buffer, sizeof(Tone));
-      //printf("letto %02x\n", (unsigned int)c);
-      Tone *nota = deserialize(buffer);
-      printf("La nota è %c\n", nota->nota);
-      printf("Il campo on della nota è settato a %c\n", nota->on);
-      printf("il campo intensità della nota è settato a %c\n", nota->intensity);
+  unsigned char buffer[sizeof(Tone)];
+  while (1)
+  {
+    unsigned char c;
+    read(fd, &c, 1);
+    //printf("pritnf 1 %02x\n", (unsigned int)c);
+    if (c == 0xaa)
+    {
+      //printf("entrato in a\n");
+      read(fd, &c, 1);
+      //printf("pritnf 2 %02x\n", (unsigned int)c);
+      if (c == 0xbb)
+      {
+        //printf("entrato in b\n");
+        read(fd, buffer, sizeof(Tone));
+        read(fd, &c, 1);
+        //printf("pritnf 3 %02x\n", (unsigned int)c);
+        if (c == 0xbb)
+        {
+          //printf("entrato in c\n");
+          Tone *nota = deserialize(buffer);
+          printf("La nota è %c\n", nota->nota);
+          printf("Il campo on della nota è settato a %d\n", nota->on);
+          printf("il campo intensità della nota è settato a %d\n", nota->intensity);
+        }
+        //printf("letto %02x\n", (unsigned int)c);
+      }
+    }
   }
 }
 
