@@ -4,9 +4,11 @@
 typedef struct Tone
 {
     //questo campo vale 1 se il tasto è premuto e 0 altrimenti
-    uint8_t some_value; 
+    uint8_t nota; 
     //valore campo della nota premuta
-    char value;
+    uint8_t on;
+    uint8_t intensity;
+
     
 } Tone;
 #pragma pack(pop)
