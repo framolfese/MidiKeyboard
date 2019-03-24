@@ -11,7 +11,7 @@ int main(void)
 
     uint8_t mask; //(1<<2);
     int i;
-    mask = 0x1E;
+    mask = 0x3C;
     DDRF &= ~mask;
     PORTF |= mask;
   
@@ -40,7 +40,7 @@ int main(void)
   while (1)
   {
     lettura = PINF & mask;
-    printf("nota: %c, premuta: %c", toneStructVector[0].nota,toneStructVector[0].on );
+    //printf("nota: %c, premuta: %c", toneStructVector[0].nota,toneStructVector[0].on );
     for (int i=2;i<6;++i){
         if(((lettura>>i)&0x1) != ((lettura_prec>>i)&0x1)) {
             // cambiamento
