@@ -1,11 +1,4 @@
-#include <util/delay.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <avr/io.h>
-#include "../avr_common/uart.h" // this includes the printf and initializes it
 #include <keyboard.h>
-#include <stdlib.h>
-
 
 
 
@@ -45,6 +38,7 @@ int main(void)
   while (1)
   {
     lettura = PINF & mask;
+    printf("nota: %c, premuta: %c", toneStructVector[0].nota,toneStructVector[0].on );
     for (int i=2;i<6;++i){
         if(((lettura>>i)&0x1) != ((lettura_prec>>i)&0x1)) {
             // cambiamento
