@@ -1,88 +1,61 @@
-#include <stdio.h>
-#include <fcntl.h>   /* File Control Definitions           */
-#include <termios.h> /* POSIX Terminal Control Definitions */
-#include <unistd.h>  /* UNIX Standard Definitions 	   */ 
-#include <errno.h>   /* ERROR Number Definitions           */
-	
-	void main()
-    	{
-        int fd;/*File Descriptor*/
-		
-		printf("\n +----------------------------------+");
-		printf("\n |        Serial Port Read          |");
-		printf("\n +----------------------------------+");
+#include "serialreader.h"
 
-		/*------------------------------- Opening the Serial Port -------------------------------*/
+int main(int argc, char **argv) {
+  int fd=serial_open("/dev/ttyACM0");
+  if (fd<0) {
+    return -1;
+  }
+  int attrib_ok=serial_set_interface_attribs(fd, B19200, 0);
+  serial_set_blocking(fd, 1);
+  printf("attr: %d\n", attrib_ok);
+  while(1) {
+    char c;
+    read(fd, &c, 1);
+    printf("letto %02x\n", (unsigned int)c);
+  }
+}
 
-		/* Change /dev/ttyUSB0 to the one corresponding to your system */
+int serial_set_interface_attribs(int fd, int speed, int parity) {
+  struct termios tty;
+  memset (&tty, 0, sizeof tty);
+  if (tcgetattr (fd, &tty) != 0) {
+    printf ("error %d from tcgetattr", errno);
+    return -1;
+  }
+  cfsetospeed (&tty, speed);
+  cfsetispeed (&tty, speed);
+  cfmakeraw(&tty);
+  // enable reading
+  tty.c_cflag &= ~(PARENB | PARODD);               // shut off parity
+  tty.c_cflag |= parity;
+  tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;      // 8-bit chars
 
-        fd = open("/dev/ttyACM0",O_RDWR | O_NOCTTY);	/* ttyUSB0 is the FT232 based USB2SERIAL Converter   */
-			   					/* O_RDWR   - Read/Write access to serial port       */
-								/* O_NOCTTY - No terminal will control the process   */
-								/* Open in blocking mode,read will wait              */
-									
-									                                        
-									
-        if(fd == -1)						/* Error Checking */
-            	   printf("\n  Error! in Opening ttyACM0");
-        else
-            	   printf("\n  ttyACM0 Opened Successfully ");
+  if (tcsetattr (fd, TCSANOW, &tty) != 0) {
+    printf ("error %d from tcsetattr", errno);
+    return -1;
+  }
+  return 0;
+}
 
-	
-		/*---------- Setting the Attributes of the serial port using termios structure --------- */
-		
-		struct termios SerialPortSettings;	/* Create the structure                          */
+void serial_set_blocking(int fd, int should_block) {
+  struct termios tty;
+  memset (&tty, 0, sizeof tty);
+  if (tcgetattr (fd, &tty) != 0) {
+      printf ("error %d from tggetattr", errno);
+      return;
+  }
 
-		tcgetattr(fd, &SerialPortSettings);	/* Get the current attributes of the Serial port */
+  tty.c_cc[VMIN]  = should_block ? 1 : 0;
+  tty.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
 
-		/* Setting the Baud rate */
-		cfsetispeed(&SerialPortSettings,B19200); /* Set Read  Speed as 19200                       */
-		cfsetospeed(&SerialPortSettings,B19200); /* Set Write Speed as 19200                      */
+  if (tcsetattr (fd, TCSANOW, &tty) != 0)
+    printf ("error %d setting term attributes", errno);
+}
 
-		/* 8N1 Mode */
-		SerialPortSettings.c_cflag &= ~PARENB;   /* Disables the Parity Enable bit(PARENB),So No Parity   */
-		SerialPortSettings.c_cflag &= ~CSTOPB;   /* CSTOPB = 2 Stop bits,here it is cleared so 1 Stop bit */
-		SerialPortSettings.c_cflag &= ~CSIZE;	 /* Clears the mask for setting the data size             */
-		SerialPortSettings.c_cflag |=  CS8;      /* Set the data bits = 8                                 */
-		
-		SerialPortSettings.c_cflag &= ~CRTSCTS;       /* No Hardware flow Control                         */
-		SerialPortSettings.c_cflag |= CREAD | CLOCAL; /* Enable receiver,Ignore Modem Control lines       */ 
-		
-		
-		SerialPortSettings.c_iflag &= ~(IXON | IXOFF | IXANY);          /* Disable XON/XOFF flow control both i/p and o/p */
-		SerialPortSettings.c_iflag &= ~(ICANON | ECHO | ECHOE | ISIG);  /* Non Cannonical mode                            */
-
-		SerialPortSettings.c_oflag &= ~OPOST;/*No Output Processing*/
-		
-		/* Setting Time outs */
-		SerialPortSettings.c_cc[VMIN] = 10; /* Read at least 10 characters */
-		SerialPortSettings.c_cc[VTIME] = 0; /* Wait indefinetly   */
-
-
-		if((tcsetattr(fd,TCSANOW,&SerialPortSettings)) != 0) /* Set the attributes to the termios structure*/
-		    printf("\n  ERROR ! in Setting attributes");
-		else
-                    printf("\n  BaudRate = 19200 \n  StopBits = 1 \n  Parity   = none");
-			
-	        /*------------------------------- Read data from serial port -----------------------------*/
-
-		tcflush(fd, TCIFLUSH);   /* Discards old data in the rx buffer            */
-		while(1){
-			char read_buffer[32];   /* Buffer to store the data received              */
-			int  bytes_read = 0;    /* Number of bytes read by the read() system call */
-			int i = 0;
-
-			bytes_read = read(fd,&read_buffer,64); /* Read the data                   */
-				
-			printf("\n\n  Bytes Rxed -%d", bytes_read); /* Print the number of bytes read */
-			printf("\n\n  ");
-
-			for(i=0;i<bytes_read;i++)	 /*printing only the received characters*/
-				printf("%c",read_buffer[i]);
-
-			printf("\n +----------------------------------+\n\n\n");
-		
-		}
-		close(fd); /* Close the serial port */
-
+int serial_open(const char* name) {
+  int fd = open (name, O_RDWR | O_NOCTTY | O_SYNC );
+  if (fd < 0) {
+    printf ("error %d opening serial, fd %d\n", errno, fd);
+  }
+  return fd;
 }
