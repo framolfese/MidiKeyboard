@@ -20,9 +20,11 @@ int main(void)
   while (1)
   {
     printf("%c", 0xAA);
+    _delay_ms(1000);
     printf("%c", 0xBB);
     for (i = 0; i < sizeof(Prova); i++)
     {
+      _delay_ms(1000);
       printf("%c", buffer[i]);
     }
     printf("%c", 0xBB);

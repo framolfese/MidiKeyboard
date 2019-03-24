@@ -12,7 +12,9 @@ int main()
    char ciao;
    FILE *fp;
 
-   fp = fopen("/dev/ttyACM0", "r+"); // read mode
+   fp = fopen("/dev/ttyACM0", "r+w"); // read mode
+   fread(&ciao,1,1, fp);
+   printf("ho appena letto: %c\n",ciao);
 
    if (fp == NULL)
    {
@@ -23,7 +25,8 @@ int main()
    while (1)
    {
       printf("ciao\n");
-      ciao = (char)fgetc(fp);
+      int a = fgetc(fp);
+      ciao = (char)a;
       if (ciao == 0xAA)
       {
          printf("ciao\n");
