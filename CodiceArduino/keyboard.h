@@ -14,6 +14,8 @@ typedef struct Tone
     //valore campo della nota premuta
     uint8_t on;
     uint8_t intensity;
+    
+    
 
     
 } Tone;
