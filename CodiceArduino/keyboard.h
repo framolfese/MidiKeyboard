@@ -29,4 +29,4 @@ typedef struct Tone
 int SendToSerial(Tone tone);
 
 // dove todo è la struct di cui vogliamo calcolare il checksum e size è la size di todo
-int Checksum(void *todo, size_t size);
+unsigned char Checksum(char *buffer, size_t size);

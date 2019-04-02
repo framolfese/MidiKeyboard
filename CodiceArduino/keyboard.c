@@ -61,23 +61,23 @@ int main(void)
   }
 }
 
-int Checksum(void *todo, size_t size)
+unsigned char Checksum(char *buffer, size_t size)
 {
 
-  char buffer[size]= todo;
+  //char *buffer = (char *)todo;
   int i;
-  char result = 0;
-  for (i = 0; i+3 <size; i+=4)
+  unsigned char result = 0;
+  unsigned char xor=0;
+  for (i = 0; i< size; i++)
   {
     /*int a = x & y;
       int b = ~x & ~y;
       int z = ~a & ~b;
+    
       */
-    int xor = ~(buffer[i] & buffer[i + 1]) & ~(~buffer[i] & ~buffer[i + 1]);
-    result = ~(xor & result) & ~(~xor & ~result);
+    xor = ~(buffer[i] & buffer[i + 1]) & ~(~buffer[i] & ~buffer[i + 1]);
+    result = ~ (xor&result) & ~(~xor&~result);
   }
-  for (; i < size; i++)
-    result = ~(buffer[i] & result) & ~(~buffer[i] & ~result);
   
   return result;
 }
@@ -87,22 +87,21 @@ int SendOverSerial(Tone tone)
 {
   //testare correttezza con unsigned
   //unsigned char buffer[sizeof(Tone)];
-  
-  char buffer[sizeof(Tone)]; 
-  memcpy(buffer,&tone,sizeof(Tone));
+
+  char buffer[sizeof(Tone)];
+  memcpy(buffer, &tone, sizeof(Tone));
 
   //sinchro
   printf("%c", (unsigned char)0Xaa);
   printf("%c", (unsigned char)0Xbb);
 
   //struct tone
-  int i = 0;
-  for (i; i<sizeof(Tone); i++)
-  //verficare se ci voglia o meno l'unsigned printf("%c", (unsigned char) buffer[i]);
-    printf("%c", buffer[i]);  
+  int i;
+  for (i = 0; i < sizeof(Tone); i++)
+    printf("%c", buffer[i]); //verficare se ci voglia o meno l'unsigned printf("%c", (unsigned char) buffer[i]);
 
   //checksum
-  //printf("%c",(char)CheckSum(&tone,sizeof(tone)));
+  printf("%c",(unsigned char) Checksum((char*)&tone,sizeof(tone)));
 
   //connection ended
   printf("%c", (unsigned char)0Xbb);
