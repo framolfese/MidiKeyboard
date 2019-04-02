@@ -85,23 +85,26 @@ int Checksum(void *todo, size_t size)
 //sendOverìserial test senza puntatore a struct
 int SendOverSerial(Tone tone)
 {
+  //testare correttezza con unsigned
+  //unsigned char buffer[sizeof(Tone)];
+  
   char buffer[sizeof(Tone)]; 
   memcpy(buffer,&tone,sizeof(Tone));
 
   //sinchro
-  printf("%c", 0Xaa);
-  printf("%c", 0Xbb);
+  printf("%c", (unsigned char)0Xaa);
+  printf("%c", (unsigned char)0Xbb);
 
   //struct tone
   int i = 0;
   for (i; i<sizeof(Tone); i++)
-    printf("%c", buffer[i]);
+    printf("%c", (unsigned char) buffer[i]);  
 
   //checksum
   //printf("%c",CheckSum(&tone,sizeof(tone)));
 
   //connection ended
-  printf("%c", 0Xbb);
+  printf("%c", (unsigned char)0Xbb);
 
   return 0;
 }
