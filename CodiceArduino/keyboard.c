@@ -47,8 +47,8 @@ int main(void)
             // trasmetti (lettura>>i)&0x01 che vale 0 o 1 alla pressione 
             
             toneStructVector[i].on = (lettura>>i)&0x01;
-            printf("nota: %c, premuta: %c", toneStructVector[i].nota,toneStructVector[i].on );
-            //SendOverSerial(&toneStructVector[i]);
+            //printf("nota: %c, premuta: %c", toneStructVector[i].nota,toneStructVector[i].on );
+            SendOverSerial(toneStructVector[i]);
         }
     }
     
@@ -64,32 +64,33 @@ int main(void)
 
 
 char* serialize(void* s,size_t size){
-  char* buffer =  malloc(size);
+  char* buffer[size];
   memcpy(buffer, s, size);
   return buffer;
    }
 
-int SendOverSerial(Tone *tone)
+
+//sendOverìserial test senza puntatore a struct
+int SendOverSerial(Tone tone)
 {
 
 
-    char* buffer= serialize(tone,sizeof(tone));    
+    char* buffer= serialize(&tone,sizeof(tone));    
     
     
     //sinchro
-    printf("%c",0XAA);
-    printf("%c",0X55);
-    printf("%c",0XAA);
-    
+    printf("%c",0Xaa);
+    printf("%c",0Xbb);
+        
     //struct tone
     int i = 0;
     for (i=sizeof(Tone)-1; i>=0 ; i--) printf("%c",buffer[i]);
     
     //checksum
-    printf("%c",0);
+    //printf("%c",0);
     
     //connection ended
-    printf("%c",0X55);
+    printf("%c",0Xbb);
   
     return 0;
 }
