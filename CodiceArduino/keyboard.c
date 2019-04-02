@@ -98,10 +98,11 @@ int SendOverSerial(Tone tone)
   //struct tone
   int i = 0;
   for (i; i<sizeof(Tone); i++)
-    printf("%c", (unsigned char) buffer[i]);  
+  //verficare se ci voglia o meno l'unsigned printf("%c", (unsigned char) buffer[i]);
+    printf("%c", buffer[i]);  
 
   //checksum
-  //printf("%c",CheckSum(&tone,sizeof(tone)));
+  //printf("%c",(char)CheckSum(&tone,sizeof(tone)));
 
   //connection ended
   printf("%c", (unsigned char)0Xbb);
