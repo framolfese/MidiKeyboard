@@ -15,6 +15,7 @@ int main(void)
   PORTF |= mask;
 
   //initialize the ToneStruc Vector
+  //usiamo un vettore di 8 perchè abbiamo intenzione di avere 8 notte più avanti
   Tone toneStructVector[8];
   toneStructVector[2].nota = 'F';
   toneStructVector[2].on = 0;
@@ -48,6 +49,7 @@ int main(void)
         // trasmetti (lettura>>i)&0x01 che vale 0 o 1 alla pressione
 
         toneStructVector[i].on = (lettura >> i) & 0x01;
+        toneStructVector[i].intensity = 0;
         //printf("nota: %c, premuta: %c", toneStructVector[i].nota,toneStructVector[i].on );
         SendOverSerial(toneStructVector[i]);
       }
@@ -92,7 +94,7 @@ int SendOverSerial(Tone tone)
 
   //struct tone
   int i = 0;
-  for (i = sizeof(Tone) - 1; i >= 0; i--)
+  for (i; i<sizeof(Tone); i++)
     printf("%c", buffer[i]);
 
   //checksum
