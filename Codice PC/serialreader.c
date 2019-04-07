@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     }
     last_is_checked = check_last_synchro_param(fd);
     if(last_is_checked == SUCCESS){
-      unsigned char controlla_vero_checksum = Checksum(buffer, sizeof(Tone));
+      unsigned char controlla_vero_checksum = checksum(buffer, sizeof(Tone));
       if(checksum_saved == controlla_vero_checksum){
         Tone *nota = deserialize(buffer);
         printf("La nota è %c\n", nota->nota);

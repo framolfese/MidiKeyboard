@@ -1,7 +1,7 @@
 #include <keyboard.h>
 #include <util/delay.h>
 #include <avr/io.h>
-#include "../avr_common/uart.h" // this includes the printf and initializes it
+
 
 int main(void)
 {
@@ -51,7 +51,7 @@ int main(void)
         toneStructVector[i].on = (lettura >> i) & 0x01;
         toneStructVector[i].intensity = 0;
         //printf("nota: %c, premuta: %c", toneStructVector[i].nota,toneStructVector[i].on );
-        SendOverSerial(toneStructVector[i]);
+        sendoverserial(toneStructVector[i]);
       }
     }
 
@@ -61,29 +61,10 @@ int main(void)
   }
 }
 
-unsigned char Checksum(char *buffer, size_t size)
-{
 
-  //char *buffer = (char *)todo;
-  int i;
-  unsigned char result = 0;
-  unsigned char xor=0;
-  for (i = 0; i< size; i++)
-  {
-    /*int a = x & y;
-      int b = ~x & ~y;
-      int z = ~a & ~b;
-    
-      */
-    xor = ~(buffer[i] & buffer[i + 1]) & ~(~buffer[i] & ~buffer[i + 1]);
-    result = ~ (xor&result) & ~(~xor&~result);
-  }
-  
-  return result;
-}
 
 //sendOverìserial test senza puntatore a struct
-int SendOverSerial(Tone tone)
+int sendoverserial(Tone tone)
 {
   //testare correttezza con unsigned
   //unsigned char buffer[sizeof(Tone)];
@@ -101,7 +82,7 @@ int SendOverSerial(Tone tone)
     printf("%c", buffer[i]); //verficare se ci voglia o meno l'unsigned printf("%c", (unsigned char) buffer[i]);
 
   //checksum
-  printf("%c",(unsigned char) Checksum((char*)&tone,sizeof(tone)));
+  printf("%c",(unsigned char) checksum((char*)&tone,sizeof(tone)));
 
   //connection ended
   printf("%c", (unsigned char)0Xbb);

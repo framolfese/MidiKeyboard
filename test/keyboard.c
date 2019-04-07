@@ -29,7 +29,7 @@ int main(void){
     //printf("switch %02x, %d\n", (int) PORTF, key);
 
 
-  SendOverSerial(nota);
+  sendoverserial(nota);
 
  _delay_ms(500); // from delay.h, wait 1 sec
   
