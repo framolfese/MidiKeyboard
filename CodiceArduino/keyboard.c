@@ -83,7 +83,7 @@ int sendoverserial(Tone tone)
 
   //checksum
   unsigned char pippo = checkSum(buffer,sizeof(Tone));
-  //printf("%c",pippo);
+  printf("%c",pippo);
 
   //connection ended
   printf("%c", (unsigned char)0Xbb);

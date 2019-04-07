@@ -3,7 +3,7 @@
 #define SUCCESS 1
 #define WRONG -1
 
-unsigned char buffer[sizeof(Tone)];
+char buffer[sizeof(Tone)];
 
 int main(int argc, char **argv)
 {
@@ -17,7 +17,7 @@ int main(int argc, char **argv)
   printf("attr: %d\n", attrib_ok);
   int all_are_checked;
   int last_is_checked;
-  unsigned char checksum_saved;
+  char checksum_saved;
   while (1)
   {
     unsigned char c;
@@ -28,7 +28,8 @@ int main(int argc, char **argv)
     }
     last_is_checked = check_last_synchro_param(fd);
     if(last_is_checked == SUCCESS){
-      unsigned char controlla_vero_checksum = checkSum(buffer, sizeof(Tone));
+      char controlla_vero_checksum = checkSum(buffer, sizeof(Tone));
+      //printf("ho letto %c , ho calcolato %c\n",checksum_saved,controlla_vero_checksum);
       if(checksum_saved == controlla_vero_checksum){
         Tone *nota = deserialize(buffer);
         printf("La nota è %c\n", nota->nota);
@@ -151,8 +152,8 @@ int check_buffer_synchro_param(int fd){
   return SUCCESS;
 }
 
-unsigned char check_savechecksum(int fd){
-  unsigned char checksum;
+char check_savechecksum(int fd){
+  char checksum;
   read(fd, &checksum, 1);
   return checksum;
 }

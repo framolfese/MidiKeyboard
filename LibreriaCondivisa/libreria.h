@@ -21,4 +21,4 @@ typedef struct Tone
 
 
 // dove buffer è la struct di cui vogliamo calcolare il checksum e size è la size di todo
-unsigned char checkSum(char *buffer, size_t size);
+char checkSum(char *buffer, size_t size);

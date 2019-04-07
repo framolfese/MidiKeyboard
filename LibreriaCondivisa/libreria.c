@@ -4,14 +4,16 @@
 
 
 
-unsigned char checkSum(char *buffer, size_t size)
+char checkSum(char *buffer, size_t size)
 {
+  //return 0xff;
 
+  uint8_t sizee=size;
   //char *buffer = (char *)todo;
-  int i;
-  unsigned char result = 0;
-  unsigned char xor=0;
-  for (i = 0; i< size; i++)
+  uint8_t i;
+  char result = 'd';
+  char xor= 'q';
+  for (i = 0; i< sizee-1; i++)
   {
     /*int a = x & y;
       int b = ~x & ~y;

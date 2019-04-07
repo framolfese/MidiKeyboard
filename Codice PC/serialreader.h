@@ -11,7 +11,7 @@
 
 
 int serial_open(const char* name);
-unsigned char checkSum(char *buffer, size_t size);
+
 
 int serial_set_interface_attribs(int fd, int speed, int parity);
 
@@ -21,7 +21,7 @@ int start_checking_param(int fd, unsigned char c);
 int check_first_synchro_param(int fd, unsigned char c);
 int check_second_synchro_param(int fd, unsigned char c);
 int check_buffer_synchro_param(int fd);
-unsigned char check_savechecksum(int fd);
+char check_savechecksum(int fd);
 int check_last_synchro_param(int fd);
 
 Tone* deserialize(char* buffer);
