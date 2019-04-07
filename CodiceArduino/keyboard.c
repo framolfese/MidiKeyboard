@@ -1,7 +1,7 @@
 #include <keyboard.h>
 #include <util/delay.h>
 #include <avr/io.h>
-//#include "../LibreriaCondivisa/libreria.h"
+
 
 int main(void)
 {
