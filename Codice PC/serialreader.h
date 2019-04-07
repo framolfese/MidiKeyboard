@@ -6,8 +6,8 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
-//#include "../CodiceArduino/keyboard.h"
-#include "../LibreriaCondivisa/libreria.h"
+#include "../CodiceArduino/keyboard.h"
+
 
 int serial_open(const char* name);
 

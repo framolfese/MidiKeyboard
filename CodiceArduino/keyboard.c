@@ -1,7 +1,7 @@
 #include <keyboard.h>
 #include <util/delay.h>
 #include <avr/io.h>
-#include "../LibreriaCondivisa/libreria.h"
+//#include "../LibreriaCondivisa/libreria.h"
 
 int main(void)
 {
@@ -82,8 +82,8 @@ int sendoverserial(Tone tone)
     printf("%c", buffer[i]); //verficare se ci voglia o meno l'unsigned printf("%c", (unsigned char) buffer[i]);
 
   //checksum
-  unsigned char pippo = checksum(buffer,sizeof(Tone));
-  printf("%c",pippo);
+  unsigned char pippo = checkSum(buffer,sizeof(Tone));
+  //printf("%c",pippo);
 
   //connection ended
   printf("%c", (unsigned char)0Xbb);

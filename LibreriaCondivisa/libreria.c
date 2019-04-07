@@ -4,7 +4,7 @@
 
 
 
-unsigned char checksum(char *buffer, size_t size)
+unsigned char checkSum(char *buffer, size_t size)
 {
 
   //char *buffer = (char *)todo;
