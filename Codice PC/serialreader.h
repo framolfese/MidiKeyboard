@@ -11,6 +11,7 @@
 
 
 int serial_open(const char* name);
+unsigned char checkSum(char *buffer, size_t size);
 
 int serial_set_interface_attribs(int fd, int speed, int parity);
 
