@@ -5,6 +5,36 @@
 #include "../avr_common/uart.h" // this includes the printf and initializes it
 #include "../CodiceArduino/keyboard.h"
 
+
+//sendOverìserial test senza puntatore a struct
+int sendoverserial(Tone tone)
+{
+  //testare correttezza con unsigned
+  //unsigned char buffer[sizeof(Tone)];
+
+  char buffer[sizeof(Tone)];
+  memcpy(buffer, &tone, sizeof(Tone));
+
+  //sinchro
+  printf("%c", (unsigned char)0Xaa);
+  printf("%c", (unsigned char)0Xbb);
+
+  //struct tone
+  int i;
+  for (i = 0; i < sizeof(Tone); i++)
+    printf("%c", buffer[i]); //verficare se ci voglia o meno l'unsigned printf("%c", (unsigned char) buffer[i]);
+
+  //checksum
+  printf("%c",(unsigned char) checksum((char*)&tone,sizeof(tone)));
+
+  //connection ended
+  printf("%c", (unsigned char)0Xbb);
+
+  return 0;
+}
+
+
+
 int main(void){
   // this initializes the printf/uart thingies
   printf_init(); 
