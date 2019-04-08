@@ -130,8 +130,7 @@
 /* Define to 1 if compiler supports __thread */
 #define HAVE___THREAD 1
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
 /* No assert debug */
@@ -165,7 +164,7 @@
 #define STDC_HEADERS 1
 
 /* Support /dev/aload* access for auto-loading */
-#define SUPPORT_ALOAD "1"
+/* #undef SUPPORT_ALOAD */
 
 /* Support resmgr with alsa-lib */
 /* #undef SUPPORT_RESMGR */

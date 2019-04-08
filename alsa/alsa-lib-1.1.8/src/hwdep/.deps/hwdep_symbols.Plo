@@ -1,1 +1,3 @@
-# dummy
+hwdep_symbols.lo: hwdep_symbols.c /usr/include/stdc-predef.h
+
+/usr/include/stdc-predef.h:
