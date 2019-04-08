@@ -3,8 +3,8 @@
 #define SUCCESS 1
 #define WRONG -1
 
-ALCdevice  * openal_output_device;
-ALCcontext * openal_output_context;
+ALCdevice* openal_output_device;
+ALCcontext* openal_output_context;
 
 ALuint internal_buffer;
 ALuint streaming_source[1];
@@ -18,35 +18,45 @@ int main(int argc, char **argv)
   {
     return -1;
   }
+  //inizio a settare i parametri per la comunicazione con la seriale
   int attrib_ok = serial_set_interface_attribs(fd, B19200, 0);
   serial_set_blocking(fd, 1);
   printf("attr: %d\n", attrib_ok);
   int all_are_checked;
   int last_is_checked;
   char checksum_saved;
+  //inizio ricezione pacchetti dalla seriale
   while (1)
   {
     unsigned char c;
     read(fd, &c, 1);
+    //prima read, inizio sincronizzazione
     all_are_checked = start_checking_param(fd, c);
     if(all_are_checked == SUCCESS){
+      //se la sincronizzazione è avvenuta, procedo leggendo il checksum
       checksum_saved = check_savechecksum(fd);
     }
     last_is_checked = check_last_synchro_param(fd);
+    //se anche l'ultimo paramentoro della sincronizzazione è giusto, capisco che 
+    //quello che ho ricevuto è il valore effettivo di una struct, ma prima controllo se
+    //il mio checksum e quello ricevuto dalla seriale sono coerenti
     if(last_is_checked == SUCCESS){
       char controlla_vero_checksum = checkSum(buffer, sizeof(Tone));
-      //printf("ho letto %c , ho calcolato %c\n",checksum_saved,controlla_vero_checksum);
       if(checksum_saved == controlla_vero_checksum){
+        //checksum controllato con successo, procedo a deserializzare il pacchetto e a 
+        //valutarne i campi
         Tone *nota = deserialize(buffer);
         printf("La nota è %c\n", nota->nota);
         printf("Il campo on della nota è settato a %d\n", nota->on);
         printf("il campo intensità della nota è settato a %d\n", nota->intensity);
+        //una volta resi noti i valori, procedo alla produzione del pcm
         PlaySound(nota);
       }
     }
   }
 }
 
+//setto attributi seriale
 int serial_set_interface_attribs(int fd, int speed, int parity)
 {
   struct termios tty;
@@ -72,6 +82,7 @@ int serial_set_interface_attribs(int fd, int speed, int parity)
   return 0;
 }
 
+//blocking/non-blocking
 void serial_set_blocking(int fd, int should_block)
 {
   struct termios tty;
@@ -89,6 +100,7 @@ void serial_set_blocking(int fd, int should_block)
     printf("error %d setting term attributes", errno);
 }
 
+//apertura seriale
 int serial_open(const char *name)
 {
   int fd = open(name, O_RDWR | O_NOCTTY | O_SYNC);
@@ -99,25 +111,26 @@ int serial_open(const char *name)
   return fd;
 }
 
+//deserializzazione pacchetto contenente la struct d'interesse
 Tone *deserialize(char *buffer)
 {
   Tone *curr = (Tone *)buffer;
   return curr;
 }
 
+//chiamo la prima check che a sua volta chiamerà le successive, passo il valore letto
+//dalla prima read che è 0xaa
 int start_checking_param(int fd, unsigned char c){
-  //chiamo la prima check che a sua volta chiamerà le successive, passo il valore letto
-  //dalla prima read che è 0xaa
   int res = check_first_synchro_param(fd, c);
   if(res == SUCCESS)
     return SUCCESS;
   return WRONG;
 }
 
+//se leggo 0xaa allora faccio una read per leggere 0xbb e mando il dato letto alla prossima funzione
 int check_first_synchro_param(int fd, unsigned char first_synchro_param){
   int res;
   unsigned char next_synchro_param;
-  //se leggo 0xaa allora faccio una read per leggere 0xbb e mando il dato letto alla prossima funzione
   if(first_synchro_param == 0xaa){
       read(fd, &next_synchro_param, 1);
       res = check_second_synchro_param(fd, next_synchro_param);
@@ -127,9 +140,9 @@ int check_first_synchro_param(int fd, unsigned char first_synchro_param){
   return WRONG;
 }
 
+//se leggo 0xbb allora chiamo la funzione che si occupa della struct
 int check_second_synchro_param(int fd, unsigned char second_synchro_param){
   int res;
-  //se leggo 0xbb allora chiamo la funzione che si occupa della struct
   if(second_synchro_param == 0xbb){
     res = check_buffer_synchro_param(fd);
   }
@@ -138,17 +151,20 @@ int check_second_synchro_param(int fd, unsigned char second_synchro_param){
   return WRONG;
 }
 
+//prendo il buffer contenente la struct
 int check_buffer_synchro_param(int fd){
   read(fd, buffer, sizeof(Tone));
   return SUCCESS;
 }
 
+//salvo il checksum ricevuto dalla seriale
 char check_savechecksum(int fd){
   char checksum;
   read(fd, &checksum, 1);
   return checksum;
 }
 
+//controllo l'ultimo paramentro di sincronizzazione con la seriale
 int check_last_synchro_param(int fd){
   unsigned char last_synchro_param;
   read(fd, &last_synchro_param, 1);
@@ -158,6 +174,9 @@ int check_last_synchro_param(int fd){
   return WRONG;
 }
 
+//definizione della frequenza della nota da suonare 
+//e chiamata a funzione per inizializzazione delle struct OpenAL
+//infine chiamata per suonare la nota effettiva
 void PlaySound(Tone* nota){
   unsigned int valore_da_suonare;
   switch (nota->nota)
@@ -181,6 +200,7 @@ void PlaySound(Tone* nota){
   play_note(valore_da_suonare);
 }
 
+//inizializzazione struct OpenAL
 void inizializza_openal_struct(){
   const char* nome_device = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
 
@@ -191,6 +211,7 @@ void inizializza_openal_struct(){
   alGenBuffers(1, & internal_buffer);
   error_controllore("Errore nella alGenBuffers\n");
 }
+
 
 void play_note(unsigned int nota){
     /* Fill buffer with Sine-Wave */
