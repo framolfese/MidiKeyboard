@@ -214,17 +214,16 @@ void inizializza_openal_struct(){
 
 
 void play_note(unsigned int nota){
-    /* Fill buffer with Sine-Wave */
-    // float freq = 440.f;
+    //prendo il valore della nota e lo converto a float per generare
+    //un'onda sinusoidale 
     float freq = (float)nota;
-    //float incr_freq = 0.1f;
-
+    //float incr_freq = serve per incrementare la frequenza, usato
+    //quando il tasto Intensity è premuto
     int seconds = 4;
-    // unsigned sample_rate = 22050;
+    // unsigned sample_rate = 22050, valore a caso
     unsigned sample_rate = 44100;
     double my_pi = 3.14159;
     size_t buf_size = seconds * sample_rate;
-
     // allocate PCM (pulse code modulation) audio buffer      
     short * samples = malloc(sizeof(short) * buf_size);
 
@@ -233,6 +232,7 @@ void play_note(unsigned int nota){
     for(; i<buf_size; ++i) {
         samples[i] = 32760 * sin( (2.f * my_pi * freq)/sample_rate * i );
 
+        //tutte cose relative all'Intensity
         //freq += incr_freq;
         // incr_freq += incr_freq;
         // freq *= factor_freq;
@@ -243,13 +243,13 @@ void play_note(unsigned int nota){
         //}
     }
 
-    /* upload buffer to OpenAL */
+    //carico il buffer con OpenAL
     alBufferData( internal_buffer, AL_FORMAT_MONO16, samples, buf_size, sample_rate);
     error_controllore("populating alBufferData");
 
     free(samples);
 
-    /* Set-up sound source and play buffer */
+    // inizializzazione della sorgente del suono e play del buffer
     // ALuint src = 0;
     // alGenSources(1, &src);
     // alSourcei(src, AL_BUFFER, internal_buffer);
@@ -258,9 +258,7 @@ void play_note(unsigned int nota){
     // alSourcePlay(src);
     alSourcePlay(streaming_source[0]);
 
-    // ---------------------
-
-    ALenum current_playing_state;
+    ALenum current_playing_state; //vediamo se attualmente sta suonando
     alGetSourcei(streaming_source[0], AL_SOURCE_STATE, & current_playing_state);
     error_controllore("alGetSourcei AL_SOURCE_STATE");
 
@@ -276,7 +274,7 @@ void play_note(unsigned int nota){
 
     printf("end of playing\n");
 
-    /* Dealloc OpenAL */
+    //dealloco la struct OpenAL
     exit_openal();
 }
 
@@ -292,13 +290,13 @@ int error_controllore(char* errore) {
 
 void exit_openal(){
     ALenum errorCode = 0;
-    // Stop the sources
-    alSourceStopv(1, & streaming_source[0]);        //      streaming_source
+    // Stoppo la sorgente 
+    alSourceStopv(1, & streaming_source[0]);
     int i;
     for (i = 0; i < 1; ++i) {
         alSourcei(streaming_source[i], AL_BUFFER, 0);
     }
-    // Clean-up
+    // Chiudo tutto
     alDeleteSources(1, &streaming_source[0]);
     alDeleteBuffers(16, &streaming_source[0]);
     errorCode = alGetError();
