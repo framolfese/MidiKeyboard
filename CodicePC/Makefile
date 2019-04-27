@@ -1,9 +1,10 @@
 CC=gcc
-CCOPTS=--std=gnu99 -Wall 
+CCOPTS= --std=gnu99 -Wall -lm -lopenal
 AR=ar
 
 HEADERS=serialreader.h\
 		../LibreriaCondivisa/libreria.h\
+
 
 OBJS=serialreader.o\
 	  ../LibreriaCondivisa/libreria.o\
@@ -27,7 +28,7 @@ lib.a: $(OBJS) $(HEADERS)
 	$(RM) $(OBJS)
 
 main:	serialreader.c $(LIBS)
-	$(CC) $(CCOPTS) -o $@ $^
+	$(CC) $(CCOPTS) -o $@ $^ -lm -lopenal
 
 
 clean:
