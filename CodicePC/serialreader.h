@@ -10,6 +10,9 @@
 #include <math.h>
 #include <AL/al.h>
 #include <AL/alc.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/wait.h>
 
 //#include "../CodiceArduino/keyboard.h"
 #include "../LibreriaCondivisa/libreria.h"
@@ -30,7 +33,7 @@ char check_savechecksum(int fd);
 int check_last_synchro_param(int fd);
 
 void PlaySound(Tone* nota);
-void play_note(unsigned int nota);
+void play_note(Tone* nota, unsigned int valore_da_suonare);
 void inizializza_openal_struct();
 int error_controllore(char* errore);
 void exit_openal();

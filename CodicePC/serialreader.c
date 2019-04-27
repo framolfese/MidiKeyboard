@@ -185,19 +185,19 @@ void PlaySound(Tone* nota){
       valore_da_suonare = 262;
       break;
     case 'R':
-      valore_da_suonare = 300;
+      valore_da_suonare = 293;
       break;
     case 'M':
-      valore_da_suonare = 320;
+      valore_da_suonare = 329;
       break;
     case 'F':
-      valore_da_suonare = 340;
+      valore_da_suonare = 349;
       break;
     default:
       break;
   }
   inizializza_openal_struct();
-  play_note(valore_da_suonare);
+  play_note(nota, valore_da_suonare);
 }
 
 //inizializzazione struct OpenAL
@@ -213,13 +213,13 @@ void inizializza_openal_struct(){
 }
 
 
-void play_note(unsigned int nota){
+void play_note(Tone* nota, unsigned int valore_da_suonare){
     //prendo il valore della nota e lo converto a float per generare
     //un'onda sinusoidale 
-    float freq = (float)nota;
+    float freq = (float)valore_da_suonare;
     //float incr_freq = serve per incrementare la frequenza, usato
     //quando il tasto Intensity è premuto
-    int seconds = 4;
+    int seconds = 1;
     // unsigned sample_rate = 22050, valore a caso
     unsigned sample_rate = 44100;
     double my_pi = 3.14159;
@@ -227,20 +227,10 @@ void play_note(unsigned int nota){
     // allocate PCM (pulse code modulation) audio buffer      
     short * samples = malloc(sizeof(short) * buf_size);
 
-    printf("here is freq %f\n", freq);
+    printf("La frequenza della nota è %f\n", freq);
     int i=0;
     for(; i<buf_size; ++i) {
         samples[i] = 32760 * sin( (2.f * my_pi * freq)/sample_rate * i );
-
-        //tutte cose relative all'Intensity
-        //freq += incr_freq;
-        // incr_freq += incr_freq;
-        // freq *= factor_freq;
-
-        //if (100.0 > freq || freq > 5000.0) {
-
-            //incr_freq *= -1.0f;
-        //}
     }
 
     //carico il buffer con OpenAL
@@ -253,22 +243,30 @@ void play_note(unsigned int nota){
     // ALuint src = 0;
     // alGenSources(1, &src);
     // alSourcei(src, AL_BUFFER, internal_buffer);
-    alGenSources(1, & streaming_source[0]);
+    alGenSources(1, &streaming_source[0]);
+    //if(nota->on == 0){
+      //alSourcei(streaming_source[0], AL_LOOPING, 1);
+    //}
+    //else{
+      //alSourcei(streaming_source[0], AL_BUFFER, internal_buffer);
+    //}
     alSourcei(streaming_source[0], AL_BUFFER, internal_buffer);
     // alSourcePlay(src);
     alSourcePlay(streaming_source[0]);
+    //alSourcei(streaming_source[0], AL_LOOPING, 1); questo è per il loop
 
     ALenum current_playing_state; //vediamo se attualmente sta suonando
-    alGetSourcei(streaming_source[0], AL_SOURCE_STATE, & current_playing_state);
+    alGetSourcei(streaming_source[0], AL_SOURCE_STATE, &current_playing_state);
     error_controllore("alGetSourcei AL_SOURCE_STATE");
 
+    int k = 0;
     while (AL_PLAYING == current_playing_state) {
 
         printf("still playing ... so sleep\n");
 
         sleep(1);   // should use a thread sleep NOT sleep() for a more responsive finish
 
-        alGetSourcei(streaming_source[0], AL_SOURCE_STATE, & current_playing_state);
+        alGetSourcei(streaming_source[0], AL_SOURCE_STATE, &current_playing_state);
         error_controllore("alGetSourcei AL_SOURCE_STATE");
     }
 
@@ -291,7 +289,7 @@ int error_controllore(char* errore) {
 void exit_openal(){
     ALenum errorCode = 0;
     // Stoppo la sorgente 
-    alSourceStopv(1, & streaming_source[0]);
+    alSourceStopv(1, &streaming_source[0]);
     int i;
     for (i = 0; i < 1; ++i) {
         alSourcei(streaming_source[i], AL_BUFFER, 0);
