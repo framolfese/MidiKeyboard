@@ -28,7 +28,7 @@ lib.a: $(OBJS) $(HEADERS)
 	$(RM) $(OBJS)
 
 main:	serialreader.c $(LIBS)
-	$(CC) $(CCOPTS) -o $@ $^ -lm -lopenal
+	$(CC) $(CCOPTS) -o $@ $^ -lm -lopenal -pthread
 
 
 clean:
