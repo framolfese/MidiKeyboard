@@ -18,19 +18,19 @@ int main(void)
   //initialize the ToneStruc Vector
   //usiamo un vettore di 8 perchè abbiamo intenzione di avere 8 notte più avanti
   Tone toneStructVector[8];
-  toneStructVector[2].nota = 1;
+  toneStructVector[2].nota = 'F';
   toneStructVector[2].on = 0;
   //toneStructVector[2].intensity = 0;
 
-  toneStructVector[3].nota = 2;
+  toneStructVector[3].nota = 'M';
   toneStructVector[3].on = 0;
   //toneStructVector[3].intensity = 0;
 
-  toneStructVector[4].nota = 3;
+  toneStructVector[4].nota = 'R';
   toneStructVector[4].on = 0;
   //toneStructVector[4].intensity = 0;
 
-  toneStructVector[5].nota = 4;
+  toneStructVector[5].nota = 'D';
   toneStructVector[5].on = 0;
   //toneStructVector[5].intensity = 0;
 
@@ -103,14 +103,6 @@ int sendoverserial(Tone tone)
   //usart_putchar(0Xaa);
   _delay_ms(1);
   printf("%c", (unsigned char)0Xaa);
-  _delay_ms(1);
-  printf("%c",0x33);
-  _delay_ms(1);
-  printf("%c",0x33);
-    _delay_ms(1);
-
-  printf("%c",0x33);
-    _delay_ms(1);
   
    //usart_putchar(0X03); //immondizzia
 

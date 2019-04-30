@@ -7,8 +7,9 @@
 #include <string.h>
 
 int main()
-{
-    const char *device = "/dev/ttyACM0";
+    {
+        printf("size of tone : %d\n",sizeof(Tone));
+        const char *device = "/dev/ttyACM0";
 
     int fd = open(device, O_RDONLY);
     if (fd == -1)
@@ -84,9 +85,9 @@ int main()
     // One input byte is enough to return from read()
     // Inter-character timer off
     //
+    config.c_cc[VMIN] = 2;
     //config.c_cc[VMIN] = 1;
-    config.c_cc[VMIN] = 1;
-    config.c_cc[VTIME] = 0;
+    //config.c_cc[VTIME] = 0;
 
     //
     // Communication speed (simple version, using the predefined
@@ -126,8 +127,8 @@ int main()
             continue;
         }
        
-        ciao = read(fd, buffer, 2);
-        config.c_cc[VMIN] = 1;
+        ciao = read(fd, buffer,(2));
+        //config.c_cc[VMIN] = 1;
         
 
         if (ciao < sizeof(Tone) || ciao > sizeof(Tone))

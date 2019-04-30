@@ -11,7 +11,7 @@ ALuint streaming_source[4];
 
 
 //char buffer[sizeof(Tone)];
-unsigned char* buffer;
+
 pthread_t thread[4];
 sem_t sema[4];
 args arg[4];
@@ -22,92 +22,108 @@ unsigned int alive[4] = {0, 0, 0, 0};
 int boolean = 0;
 int main(int argc, char **argv)
 {
-  buffer= malloc(sizeof(Tone)+1);
-  //int fd = serial_open("/dev/ttyACM0");
-  int fd = open((const char*)(&"/dev/ttyACM0"), O_RDONLY | O_NOCTTY);
-  if (fd < 0)
-  {
-    exit;
-    return -1;
-  }
-
-  //inizio a settare i parametri per la comunicazione con la seriale
-  int attrib_ok = serial_set_interface_attribs(fd, B19200, 0);
-  serial_set_blocking(fd, 1);
-  printf("attr: %d\n", attrib_ok);
+  
+  char buffer[sizeof(Tone)];
   int all_are_checked;
   int last_is_checked;
   char checksum_saved;
+   printf("size of tone : %d\n",sizeof(Tone));
+    const char *device = "/dev/ttyACM0";
 
-  //initialize semaphore
-  sem_init(&sema[0], 1, 1);
-  sem_init(&sema[1], 1, 1);
-  sem_init(&sema[2], 1, 1);
-  sem_init(&sema[3], 1, 1);
+    int fd = open(device, O_RDONLY);
+    if (fd == -1)
+    {
+        printf("failed to open port\n");
+        exit(0);
+    }
 
-  //initialize pthreads
-  //uint16_t SSSsize= (uint16_t) sizeof(Tone);
-  //char* Sbuffer = (unsigned char*)malloc(sizeof(Tone));
-  //inizializza_openal_struct();
-  inizializza_openal_struct();
-  ////////////////
-  if(!isatty(fd)){
-    printf("MEGA ERROR ODDDIO\n");
-    exit(-1);
-  }
-  struct termios tty;
-  memset(&tty, 0, sizeof tty);
-  if (tcgetattr(fd, &tty) < 0)
-  {
-    printf("error %d from tcgetattr", errno);
-    return -1;
-  }
-  if(cfsetispeed(&tty, B19200) < 0 || cfsetospeed(&tty, B19200) < 0) {
-    printf("MEGA ERROR ODDDIO della velocity\n");
-    return -1;
- }
-  //old
-  //cfsetospeed(&tty, speed);
-  //cfsetispeed(&tty, speed);
-  cfmakeraw(&tty);
+    struct termios config;
 
-  tty.c_cflag &= ~(PARENB | PARODD);
+    //
+    // Check if the file descriptor is pointing to a TTY device or not.
+    //
+    if (!isatty(fd))
+    { //... error handling ...
+        printf("errore riga 27\n");
+    }
 
-  //test
-  /*
-  tty.c_oflag = 0; 
-  tty.c_oflag &= ~(OCRNL | ONLCR | ONLRET |ONOCR | ENOENT | OFILL | OLCUC | OPOST);
-  
-  tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-  tty.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-  tty.c_oflag &= ~OPOST;
-  tty.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
-  tty.c_cflag &= ~(CSIZE | PARENB);
- tty.c_cflag |= CS8;
-  tty.c_cc[VMIN]  = 1;
- tty.c_cc[VTIME] = 0;
-  */
-  //old
-  //tty.c_cflag |= 0;
-  
+    //
+    // Get the current configuration of the serial interface
+    //
+    if (tcgetattr(fd, &config) < 0)
+    { //... error handling ...
+        printf("errore riga 35\n");
+    }
 
-  //tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;
-  //tty.c_cflag &= (tty.c_cflag & ~CSIZE) | CS8;
+    //
+    // Input flags - Turn off input processing
+    //
+    // convert break to null byte, no CR to NL translation,
+    // no NL to CR translation, don't mark parity errors or breaks
+    // no input parity check, don't strip high bit off,
+    // no XON/XOFF software flow control
+    //
+    //  _delay_ms(1);
+    //config.c_iflag &= ~(IGNBRK | BRKINT | ICRNL |
+    //                    INLCR | PARMRK | INPCK | ISTRIP | IXON);
 
-  //test
-  /* fetch bytes as they become available */
-  /*tty.c_cc[VMIN] = 1;
-  tty.c_cc[VTIME] = 1;
-  //
-*/
+    config.c_iflag &= ~(IGNBRK | PARMRK);
+    //
 
+    // Output flags - Turn off output processing
+    //
+    // no CR to NL translation, no NL to CR-NL translation,
+    // no NL to CR translation, no column 0 CR suppression,
+    // no Ctrl-D suppression, no fill characters, no case mapping,
+    // no local output processing
+    //
+    //config.c_oflag &= ~( OCRNL | ONLCR | ONLRET |ONOCR| OFILL | OLCUC | OPOST);
+    //config.c_oflag = 0;
+    config.c_cflag &= (OPOST);
+    //config.c_lflag |= ICANON;
 
-  if (tcsetattr(fd, TCSANOW, &tty) != 0)
-  {
-    printf("error %d from tcsetattr", errno);
-    return -1;
-  }
-  ////////////////7
+    //
+    // No line processing
+    //
+    // echo off, echo newline off, canonical mode off,
+    // extended input processing off, signal chars off
+    //
+    //config.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
+    config.c_lflag &= ~(ICANON | IEXTEN | ISIG);
+    //
+    // Turn off character processing
+    //
+    // clear current char size mask, no parity checking,
+    // no output processing, force 8 bit input
+    //
+    //config.c_cflag &= ~(CSIZE | PARENB);
+    //config.c_cflag |= CS8;
+    config.c_cflag &= ~(PARENB);
+    config.c_cflag |= CS8;
+    //
+    // One input byte is enough to return from read()
+    // Inter-character timer off
+    //
+    config.c_cc[VMIN] = 2;
+    //config.c_cc[VMIN] = 1;
+    config.c_cc[VTIME] = 0;
+
+    //
+    // Communication speed (simple version, using the predefined
+    // constants)
+    //
+    if (cfsetispeed(&config, B9600) < 0 || cfsetospeed(&config, B9600) < 0)
+    {
+        printf("errore riga 91\n"); // ... error handling ...
+    }
+
+    //
+    // Finally, apply the configuration
+    //
+    if (tcsetattr(fd, TCSAFLUSH, &config) < 0)
+    { //... error handling ...
+        printf("errore riga 99\n");
+    }
 
 
 
@@ -119,22 +135,22 @@ int main(int argc, char **argv)
   {
 
     
-    popo= read(fd, &rr, sizeof(unsigned char));
+    popo= read(fd, &rr, 1);
     if(popo<0) printf("XXXXXXXerrore prima read\n");
     if (rr == 0x55)
     {
-      popo= read(fd, &rr, sizeof(unsigned char));
+      popo= read(fd, &rr, 1);
       if(popo<0) printf("XXXXXXXerrore seconda read\n");
       if (rr == 0xaa)
       {
-        popo= read(fd, buffer, sizeof(Tone));
+        popo= read(fd, buffer, 2);
         if(popo<0) printf("XXXXXXXerrore terza read\n");
         /*
         popo= read(fd, &ck, 1);
         if(popo<0) printf("XXXXXXXerrore quarta read\n");
         printf("ck pre check aa: %c\n",ck);
         */
-        popo= read(fd, &rr, sizeof(unsigned char));
+        popo= read(fd, &rr, 1);
         if(popo<0) printf("XXXXXXXerrore quita read\n");
         if (rr == 0xaa)
         {
@@ -254,10 +270,10 @@ int serial_set_interface_attribs(int fd, int speed, int parity)
 
   //test
   /* fetch bytes as they become available */
-  /*tty.c_cc[VMIN] = 1;
+  tty.c_cc[VMIN] = 2;
   tty.c_cc[VTIME] = 1;
   //
-*/
+
 
 
   if (tcsetattr(fd, TCSANOW, &tty) != 0)
