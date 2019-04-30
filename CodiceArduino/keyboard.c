@@ -18,21 +18,21 @@ int main(void)
   //initialize the ToneStruc Vector
   //usiamo un vettore di 8 perchè abbiamo intenzione di avere 8 notte più avanti
   Tone toneStructVector[8];
-  toneStructVector[2].nota = 'F';
+  toneStructVector[2].nota = 1;
   toneStructVector[2].on = 0;
-  toneStructVector[2].intensity = 0;
+  //toneStructVector[2].intensity = 0;
 
-  toneStructVector[3].nota = 'M';
+  toneStructVector[3].nota = 2;
   toneStructVector[3].on = 0;
-  toneStructVector[3].intensity = 0;
+  //toneStructVector[3].intensity = 0;
 
-  toneStructVector[4].nota = 'R';
+  toneStructVector[4].nota = 3;
   toneStructVector[4].on = 0;
-  toneStructVector[4].intensity = 0;
+  //toneStructVector[4].intensity = 0;
 
-  toneStructVector[5].nota = 'D';
+  toneStructVector[5].nota = 4;
   toneStructVector[5].on = 0;
-  toneStructVector[5].intensity = 0;
+  //toneStructVector[5].intensity = 0;
 
   uint8_t lettura, lettura_prec;
   lettura = PINF & mask;
@@ -52,8 +52,8 @@ int main(void)
         //_delay_ms(25);
         uint8_t ca = (lettura >> i) & 0x01;
         if(ca!=1 ) toneStructVector[i].on=0;
-        else toneStructVector[i].on= 23 ;
-        toneStructVector[i].intensity = 0;
+        else toneStructVector[i].on=1 ;
+        //toneStructVector[i].intensity = 0;
         //printf("nota: %c, premuta: %c checksum: %c\n", toneStructVector[i].nota,toneStructVector[i].on,checkSum(&toneStructVector[i],sizeof(Tone)) );
         sendoverserial(toneStructVector[i]);
         //_delay_ms(200);
@@ -74,30 +74,43 @@ int sendoverserial(Tone tone)
   //testare correttezza con unsigned
   //unsigned char buffer[sizeof(Tone)];
   
-  char buffer[sizeof(Tone)];
+  char buffer[sizeof(Tone)+2];
   memcpy(buffer, &tone, sizeof(Tone));
                                                           
   //sinchro
-  //printf("%c", (unsigned char)0Xaa);
+  _delay_ms(1);
+  printf("%c", (unsigned char)0X55);
+  _delay_ms(1);
+  printf("%c", (unsigned char)0Xaa);
   
-  usart_putchar(0x55);
+  //usart_putchar(0x55);
 
   
-  usart_putchar(0Xaa);
+  //usart_putchar(0Xaa);
   
   //struct tone
   int i;
-  for (i = 0; i < sizeof(Tone); ++i)
+  for (i = 0; i < sizeof(Tone); ++i){
      usart_putchar(buffer[i]); //verficare se ci voglia o meno l'unsigned printf("%c", (unsigned char) buffer[i]);
-      //printf("%c",buffer[i]);
+     //_delay_ms(1);     
+ }     //printf("%c",buffer[i]);
   //checksum
   //unsigned char pippo = checkSum(&buffer,sizeof(Tone));
   //usart_putchar(pippo);
   //usart_putchar(0x01);
   //printf("%c",pippo);
   //connection ended
-   usart_putchar(0Xaa);
-  //printf("%c",0xaa);
+  //usart_putchar(0Xaa);
+  _delay_ms(1);
+  printf("%c", (unsigned char)0Xaa);
+  _delay_ms(1);
+  printf("%c",0x33);
+  _delay_ms(1);
+  printf("%c",0x33);
+    _delay_ms(1);
+
+  printf("%c",0x33);
+    _delay_ms(1);
   
    //usart_putchar(0X03); //immondizzia
 
