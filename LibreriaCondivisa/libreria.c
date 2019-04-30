@@ -4,16 +4,17 @@
 
 
 
-char checkSum(char *buffer, size_t size)
+unsigned char checkSum(char *buffer, uint8_t size)
 {
+  //return 0x01;
   //return 0xff;
-
-  uint8_t sizee=size;
+  //return 0;
+  
   //char *buffer = (char *)todo;
   uint8_t i;
-  char result = 'd';
-  char xor= 'q';
-  for (i = 0; i< sizee-1; i++)
+  uint8_t result = 'd';
+  uint8_t xor= 'q';
+  for (i = 0; i<sizeof(Tone); i++)
   {
     /*int a = x & y;
       int b = ~x & ~y;

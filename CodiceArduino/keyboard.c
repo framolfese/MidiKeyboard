@@ -1,10 +1,11 @@
 #include <keyboard.h>
 #include <util/delay.h>
 #include <avr/io.h>
-
+uint16_t globalSize;
 
 int main(void)
 {
+  globalSize= sizeof(Tone);
   // this initializes the printf/uart thingies
   printf_init();
 
@@ -47,17 +48,21 @@ int main(void)
       {
         // cambiamento
         // trasmetti (lettura>>i)&0x01 che vale 0 o 1 alla pressione
-
-        toneStructVector[i].on = (lettura >> i) & 0x01;
+        
+        //_delay_ms(25);
+        uint8_t ca = (lettura >> i) & 0x01;
+        if(ca!=1 ) toneStructVector[i].on=0;
+        else toneStructVector[i].on= 23 ;
         toneStructVector[i].intensity = 0;
-        //printf("nota: %c, premuta: %c", toneStructVector[i].nota,toneStructVector[i].on );
+        //printf("nota: %c, premuta: %c checksum: %c\n", toneStructVector[i].nota,toneStructVector[i].on,checkSum(&toneStructVector[i],sizeof(Tone)) );
         sendoverserial(toneStructVector[i]);
+        //_delay_ms(200);
       }
     }
 
     lettura_prec = lettura;
 
-    //_delay_ms(50); // from delay.h, wait 1 sec
+    _delay_ms(25); // from delay.h, wait 1 sec
   }
 }
 
@@ -68,25 +73,33 @@ int sendoverserial(Tone tone)
 {
   //testare correttezza con unsigned
   //unsigned char buffer[sizeof(Tone)];
-
+  
   char buffer[sizeof(Tone)];
   memcpy(buffer, &tone, sizeof(Tone));
-
+                                                          
   //sinchro
-  printf("%c", (unsigned char)0Xaa);
-  printf("%c", (unsigned char)0Xbb);
+  //printf("%c", (unsigned char)0Xaa);
+  
+  usart_putchar(0x55);
 
+  
+  usart_putchar(0Xaa);
+  
   //struct tone
   int i;
-  for (i = 0; i < sizeof(Tone); i++)
-    printf("%c", buffer[i]); //verficare se ci voglia o meno l'unsigned printf("%c", (unsigned char) buffer[i]);
-
+  for (i = 0; i < sizeof(Tone); ++i)
+     usart_putchar(buffer[i]); //verficare se ci voglia o meno l'unsigned printf("%c", (unsigned char) buffer[i]);
+      //printf("%c",buffer[i]);
   //checksum
-  unsigned char pippo = checkSum(buffer,sizeof(Tone));
-  printf("%c",pippo);
-
+  //unsigned char pippo = checkSum(&buffer,sizeof(Tone));
+  //usart_putchar(pippo);
+  //usart_putchar(0x01);
+  //printf("%c",pippo);
   //connection ended
-  printf("%c", (unsigned char)0Xbb);
+   usart_putchar(0Xaa);
+  //printf("%c",0xaa);
+  
+   //usart_putchar(0X03); //immondizzia
 
   return 0;
 }

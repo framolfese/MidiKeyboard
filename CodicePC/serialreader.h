@@ -35,7 +35,7 @@ int check_last_synchro_param(int fd);
 
 void PlaySound(Tone* nota);
 void* play_note(void* x);
-void inizializza_openal_struct(int ty);
+void inizializza_openal_struct();
 int error_controllore(char* errore);
 void exit_openal(int ty);
 
@@ -43,7 +43,7 @@ Tone* deserialize(char* buffer);
 
 
 typedef struct args{
-    Tone *nota;
+    //Tone* nota;
     unsigned int val;
-    int i;
+    unsigned int i;
 }args;
