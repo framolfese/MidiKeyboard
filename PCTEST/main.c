@@ -1,4 +1,3 @@
-
 #include <termios.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -8,8 +7,8 @@
 
 int main()
     {
-        printf("size of tone : %d\n",sizeof(Tone));
-        const char *device = "/dev/ttyACM0";
+    printf("size of tone : %ld\n",sizeof(Tone));
+    const char *device = "/dev/ttyACM0";
 
     int fd = open(device, O_RDONLY);
     if (fd == -1)

@@ -95,10 +95,10 @@ int sendoverserial(Tone tone)
      //_delay_ms(1);     
  }     //printf("%c",buffer[i]);
   //checksum
-  //unsigned char pippo = checkSum(&buffer,sizeof(Tone));
+  unsigned char pippo = checkSum(buffer,sizeof(Tone));
   //usart_putchar(pippo);
   //usart_putchar(0x01);
-  //printf("%c",pippo);
+  printf("%c",pippo);
   //connection ended
   //usart_putchar(0Xaa);
   _delay_ms(1);

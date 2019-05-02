@@ -15,4 +15,3 @@
 // eventuale checksum che implementeremo, per adesso invio "0"
 // 0XBB questo serve per dire di aver finito i pacchetti inviati
 //int sendoverserial(Tone tone);
-

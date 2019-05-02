@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdlib.h>    // gives malloc
+#include <stdlib.h>
 #include <math.h>
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -15,16 +15,11 @@
 #include<sys/wait.h>
 #include <pthread.h>
 #include <signal.h>
-//#include "../CodiceArduino/keyboard.h"
 #include "../LibreriaCondivisa/libreria.h"
 
 
 int serial_open(const char* name);
-
-
 int serial_set_interface_attribs(int fd, int speed, int parity);
-
-void serial_set_blocking(int fd, int should_block);
 
 int start_checking_param(int fd, unsigned char c);
 int check_first_synchro_param(int fd, unsigned char c);
@@ -35,15 +30,14 @@ int check_last_synchro_param(int fd);
 
 void PlaySound(Tone* nota);
 void* play_note(void* x);
-void inizializza_openal_struct();
-int error_controllore(char* errore);
+void inizializza_openal_struct(int ty);
+int error_control(char* errore);
 void exit_openal(int ty);
 
 Tone* deserialize(char* buffer);
 
-
 typedef struct args{
-    //Tone* nota;
-    unsigned int val;
-    unsigned int i;
-}args;
+    Tone *nota;
+    int freq;
+    int i;
+}thread_args;

@@ -1,21 +1,16 @@
 #include <string.h>
-
 #include <stdio.h>
 #include <stdint.h>
-
 #include <stdlib.h>
 
-//#pragma pack(push, 2)
+
+#pragma pack(push,1)
 typedef struct Tone
 {
-    //questo campo vale 1 se il tasto è premuto e 0 altrimenti
-    char nota;
-    //valore campo della nota premuta
-    char on;
-    //uint8_t intensity;
-
+    uint8_t nota; 
+    uint8_t on;
 } Tone;
-//#pragma pack(pop)
+#pragma pack(pop)
 
-// dove buffer è la struct di cui vogliamo calcolare il checksum e size è la size di todo
-unsigned char checkSum(char *buffer, uint8_t size);
+char checkSum(char *buffer, size_t size);
+int sendoverserial(Tone tone);
