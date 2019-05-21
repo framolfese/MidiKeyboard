@@ -15,9 +15,11 @@
 #include<sys/wait.h>
 #include <pthread.h>
 #include <signal.h>
+#include <semaphore.h>
+#include <signal.h>
 #include "../LibreriaCondivisa/libreria.h"
 
-
+void intHandler();
 int serial_open(const char* name);
 int serial_set_interface_attribs(int fd, int speed, int parity);
 

@@ -1,5 +1,4 @@
 #include "serialreader.h"
-#include <semaphore.h>
 
 #define SUCCESS 1
 #define WRONG -1
@@ -22,6 +21,7 @@ int main(int argc, char **argv)
 {
 
   sem_init(&mysem, 0, 1);
+  signal(SIGINT, intHandler);
 
   int fd = serial_open("/dev/ttyACM0");
   if (fd < 0)
@@ -30,11 +30,25 @@ int main(int argc, char **argv)
   }
   //inizio a settare i parametri per la comunicazione con la seriale
   int attrib_ok = serial_set_interface_attribs(fd, B19200, 0);
-  printf("attr: %d\n", attrib_ok);
+  if (attrib_ok != 0)
+    printf("attr: %d\n", attrib_ok);
   int all_are_checked;
   int last_is_checked;
   char checksum_saved;
   //inizio ricezione pacchetti dalla seriale
+
+  printf("PROGETTO SISTEMI OPERATIVI 2018/2019\n");
+  usleep(1000000);
+  printf("NOME PROGETTO: MIDI KEYBOARD\n");
+  usleep(1000000);
+  printf("COMPONENTI DEL GRUPPO:\n");
+  usleep(1000000);
+  printf("FRANCESCO DOUGLAS SCOTTI DI VIGOLENO\n");
+  usleep(1000000);
+  printf("FRANCESCO MOLFESE\n");
+  usleep(1000000);
+  printf("PREMI PER UN TASTO SULLA BOARD PER INZIARE\n");
+
   while (1)
   {
     unsigned char c;
@@ -58,6 +72,13 @@ int main(int argc, char **argv)
         //checksum controllato con successo, procedo a deserializzare il pacchetto e a
         //valutarne i campi
         Tone *nota = deserialize(buffer);
+        system("clear");
+        printf("PROGETTO SISTEMI OPERATIVI 2018/2019\n");
+        printf("NOME PROGETTO: MIDI KEYBOARD\n");
+        printf("COMPONENTI DEL GRUPPO:\n");
+        printf("FRANCESCO DOUGLAS SCOTTI DI VIGOLENO\n");
+        printf("FRANCESCO MOLFESE\n");
+        printf("PREMI PER UN TASTO SULLA BOARD PER INZIARE\n\n\n\n\n");
         printf("La nota è %c\n", nota->nota);
         printf("Il campo on della nota è settato a %d\n", nota->on);
         //una volta resi noti i valori, procedo alla produzione del pcm
@@ -265,13 +286,13 @@ void *play_note(void *argomenti_thread)
   size_t buf_size = seconds * sample_rate;
   // alloco PCM (pulse code modulation) audio buffer
   short *samples = malloc(sizeof(short) * buf_size);
-  float weaken=32760; //attenuare la nota
+  float weaken = 32760; //attenuare la nota
   printf("La frequenza della nota è %f\n", freq);
   int i = 0;
   for (; i < buf_size; ++i)
   {
-    samples[i] = (weaken) * sin((2.f * my_pi * (freq)) / sample_rate * i);
-    weaken-=0.2;
+    samples[i] = (weaken)*sin((2.f * my_pi * (freq)) / sample_rate * i);
+    weaken -= 0.2;
   }
 
   //carico il buffer con OpenAL
@@ -291,7 +312,6 @@ void *play_note(void *argomenti_thread)
   {
     if (alive[ty] == 0)
     {
-      alSourceStop(streaming_source[ty]);
       free(arg);
       exit_openal(ty);
       pthread_exit(NULL);
@@ -313,7 +333,39 @@ void exit_openal(int ty)
   alSourcei(streaming_source[ty], AL_BUFFER, 0);
   // Chiudo tutto
   alDeleteSources(1, &streaming_source[ty]);
+  alDeleteBuffers(1, &internal_buffer[ty]);
   alcMakeContextCurrent(NULL);
   alcDestroyContext(openal_output_context[ty]);
   alcCloseDevice(openal_output_device);
+}
+
+void intHandler()
+{
+  printf("\r");
+  printf("CHIUSURA IN CORSO\n");
+  int i;
+  int j;
+  for (i = 0; i < 4; i++)
+  {
+    printf("\r");
+    printf("[");
+    for (j = 0; j < 25 * (i + 1); j++)
+    {
+      usleep(10000);
+      printf("#");
+      fflush(NULL);
+    }
+    for (; j < 100; j++)
+    {
+      printf(" ");
+    }
+    printf("]");
+    fflush(NULL);
+    alive[i] = 0;
+    pthread_join(threads[i], NULL);
+  }
+
+  sem_destroy(&mysem);
+  printf("\nIL PROGRAMMA È TERMINATO CON SUCCESSO\n");
+  exit(0);
 }
