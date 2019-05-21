@@ -1,22 +1,28 @@
 #include "serialreader.h"
+#include <semaphore.h>
 
 #define SUCCESS 1
 #define WRONG -1
 
 ALCdevice *openal_output_device;
-ALCcontext *openal_output_context;
+ALCcontext *openal_output_context[4];
 
 ALuint internal_buffer[4];
 ALuint streaming_source[4];
+ALenum current_playing_state[4];
 
 char buffer[sizeof(Tone)];
 
 pthread_t threads[4];
+sem_t mysem;
 
-int alive[4] = {0,0,0,0};
+int alive[4] = {0, 0, 0, 0};
 
 int main(int argc, char **argv)
 {
+
+  sem_init(&mysem, 0, 1);
+
   int fd = serial_open("/dev/ttyACM0");
   if (fd < 0)
   {
@@ -59,7 +65,6 @@ int main(int argc, char **argv)
       }
     }
   }
-  
 }
 
 //setto attributi seriale
@@ -82,7 +87,7 @@ int serial_set_interface_attribs(int fd, int speed, int parity)
   tty.c_cflag &= ~(PARENB);
   tty.c_cflag |= CS8;
   tty.c_cc[VMIN] = 2;
-  
+
   if (tcsetattr(fd, TCSAFLUSH, &tty) != 0)
   {
     printf("error %d from tcsetattr", errno);
@@ -113,8 +118,10 @@ Tone *deserialize(char *buffer)
 //dalla prima read che è 0xaa
 int start_checking_param(int fd, unsigned char c)
 {
+  //printf("%c\n",c);
   int res = check_first_synchro_param(fd, c);
-  if (res == SUCCESS){
+  if (res == SUCCESS)
+  {
     return SUCCESS;
   }
   return WRONG;
@@ -123,11 +130,13 @@ int start_checking_param(int fd, unsigned char c)
 //se leggo 0xaa allora faccio una read per leggere 0xbb e mando il dato letto alla prossima funzione
 int check_first_synchro_param(int fd, unsigned char first_synchro_param)
 {
+  //printf("%c\n",first_synchro_param);
   int res;
   unsigned char next_synchro_param;
   if (first_synchro_param == 0x55)
   {
     read(fd, &next_synchro_param, 1);
+    //printf("%c\n",next_synchro_param);;
     res = check_second_synchro_param(fd, next_synchro_param);
   }
   if (res == SUCCESS)
@@ -138,6 +147,7 @@ int check_first_synchro_param(int fd, unsigned char first_synchro_param)
 //se leggo 0xbb allora chiamo la funzione che si occupa della struct
 int check_second_synchro_param(int fd, unsigned char second_synchro_param)
 {
+  //printf("%c\n",second_synchro_param);
   int res;
   if (second_synchro_param == 0xaa)
   {
@@ -219,10 +229,11 @@ void PlaySound(Tone *nota)
       return;
     }
     alive[i] = 1;
-    thread_args* arg = malloc(sizeof(thread_args));
+    thread_args *arg = malloc(sizeof(thread_args));
     arg->nota = nota;
     arg->freq = freq_da_suonare;
-    arg->i=i;
+    arg->i = i;
+    printf("aggiornato il thread:%d\n", i);
     pthread_create(&threads[i], NULL, &play_note, arg);
   }
 }
@@ -233,8 +244,8 @@ void inizializza_openal_struct(int ty)
   const char *nome_device = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
 
   openal_output_device = alcOpenDevice(nome_device);
-  openal_output_context = alcCreateContext(openal_output_device, NULL);
-  alcMakeContextCurrent(openal_output_context);
+  openal_output_context[ty] = alcCreateContext(openal_output_device, NULL);
+  alcMakeContextCurrent(openal_output_context[ty]);
 
   alGenBuffers(1, &internal_buffer[ty]);
   error_control("Errore nella alGenBuffers\n");
@@ -243,9 +254,10 @@ void inizializza_openal_struct(int ty)
 //Tone* nota, unsigned int valore_da_suonare
 void *play_note(void *argomenti_thread)
 {
-  thread_args* arg = (thread_args*)argomenti_thread;
+  sem_wait(&mysem);
+  thread_args *arg = (thread_args *)argomenti_thread;
   int freq_da_suonare = arg->freq;
-  int ty= arg->i;
+  int ty = arg->i;
 
   inizializza_openal_struct(ty);
   //ty è il numero del thread i-esimo associato alla nota i-esima
@@ -266,10 +278,12 @@ void *play_note(void *argomenti_thread)
   {
     samples[i] = 32760 * sin((2.f * my_pi * freq) / sample_rate * i);
   }
+
+  
   //carico il buffer con OpenAL
   alBufferData(internal_buffer[ty], AL_FORMAT_MONO16, samples, buf_size, sample_rate);
   error_control("populating alBufferData");
-  
+
   free(samples);
 
   // inizializzazione della sorgente del suono e play del buffer
@@ -277,11 +291,10 @@ void *play_note(void *argomenti_thread)
   alSourcei(streaming_source[ty], AL_BUFFER, internal_buffer[ty]);
   alSourcePlay(streaming_source[ty]);
 
-  ALenum current_playing_state;
-  alGetSourcei(streaming_source[ty], AL_SOURCE_STATE, &current_playing_state);
-  error_control("alGetSourcei AL_SOURCE_STATE");
-
-  while (AL_PLAYING == current_playing_state)
+  alGetSourcei(streaming_source[ty], AL_SOURCE_STATE, &current_playing_state[ty]);
+  error_control("alGetSourcei-1 AL_SOURCE_STATE");
+  sem_post(&mysem);
+  while (AL_PLAYING == current_playing_state[ty])
   {
     if (alive[ty] == 0)
     {
@@ -290,8 +303,8 @@ void *play_note(void *argomenti_thread)
       exit_openal(ty);
       pthread_exit(NULL);
     }
-    alGetSourcei(streaming_source[ty], AL_SOURCE_STATE, &current_playing_state);
-    error_control("alGetSourcei AL_SOURCE_STATE");
+    alGetSourcei(streaming_source[ty], AL_SOURCE_STATE, &current_playing_state[ty]);
+    error_control("alGetSourcei-2 AL_SOURCE_STATE");
   }
   printf("end of playing\n");
   //dealloco la struct OpenAL
@@ -322,6 +335,6 @@ void exit_openal(int ty)
   // Chiudo tutto
   alDeleteSources(1, &streaming_source[ty]); //da cambiare le size perché misà che è 4
   alcMakeContextCurrent(NULL);
-  alcDestroyContext(openal_output_context);
+  alcDestroyContext(openal_output_context[ty]);
   alcCloseDevice(openal_output_device);
 }
