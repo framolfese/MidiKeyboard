@@ -271,12 +271,15 @@ void *play_note(void *argomenti_thread)
   size_t buf_size = seconds * sample_rate;
   // allocate PCM (pulse code modulation) audio buffer
   short *samples = malloc(sizeof(short) * buf_size);
-
+  float cccc=32760;
   printf("La frequenza della nota è %f\n", freq);
   int i = 0;
   for (; i < buf_size; ++i)
   {
-    samples[i] = 32760 * sin((2.f * my_pi * freq) / sample_rate * i);
+    samples[i] = (cccc) * sin((2.f * my_pi * (freq)) / sample_rate * i);
+    cccc-=0.2;
+    //sample_rate-=1;
+    //freq+=0.1;
   }
 
   
