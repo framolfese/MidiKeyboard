@@ -47,7 +47,7 @@ int main(int argc, char **argv)
       checksum_saved = check_savechecksum(fd);
     }
     last_is_checked = check_last_synchro_param(fd);
-    //se anche l'ultimo paramentoro della sincronizzazione è giusto, capisco che
+    //se anche l'ultimo parametro della sincronizzazione è giusto, capisco che
     //quello che ho ricevuto è il valore effettivo di una struct, ma prima controllo se
     //il mio checksum e quello ricevuto dalla seriale sono coerenti
     if (last_is_checked == SUCCESS)
@@ -115,10 +115,9 @@ Tone *deserialize(char *buffer)
 }
 
 //chiamo la prima check che a sua volta chiamerà le successive, passo il valore letto
-//dalla prima read che è 0xaa
+//dalla prima read che è 0x55
 int start_checking_param(int fd, unsigned char c)
 {
-  //printf("%c\n",c);
   int res = check_first_synchro_param(fd, c);
   if (res == SUCCESS)
   {
@@ -127,16 +126,14 @@ int start_checking_param(int fd, unsigned char c)
   return WRONG;
 }
 
-//se leggo 0xaa allora faccio una read per leggere 0xbb e mando il dato letto alla prossima funzione
+//se leggo 0x55 allora faccio una read per leggere 0xaa e mando il dato letto alla prossima funzione
 int check_first_synchro_param(int fd, unsigned char first_synchro_param)
 {
-  //printf("%c\n",first_synchro_param);
   int res;
   unsigned char next_synchro_param;
   if (first_synchro_param == 0x55)
   {
     read(fd, &next_synchro_param, 1);
-    //printf("%c\n",next_synchro_param);;
     res = check_second_synchro_param(fd, next_synchro_param);
   }
   if (res == SUCCESS)
@@ -144,10 +141,9 @@ int check_first_synchro_param(int fd, unsigned char first_synchro_param)
   return WRONG;
 }
 
-//se leggo 0xbb allora chiamo la funzione che si occupa della struct
+//se leggo 0xaa allora chiamo la funzione che si occupa della struct
 int check_second_synchro_param(int fd, unsigned char second_synchro_param)
 {
-  //printf("%c\n",second_synchro_param);
   int res;
   if (second_synchro_param == 0xaa)
   {
@@ -248,10 +244,9 @@ void inizializza_openal_struct(int ty)
   alcMakeContextCurrent(openal_output_context[ty]);
 
   alGenBuffers(1, &internal_buffer[ty]);
-  error_control("Errore nella alGenBuffers\n");
 }
 
-//Tone* nota, unsigned int valore_da_suonare
+//creazione del pcm da parte del thread i-esimo
 void *play_note(void *argomenti_thread)
 {
   sem_wait(&mysem);
@@ -265,38 +260,33 @@ void *play_note(void *argomenti_thread)
   //un'onda sinusoidale
   float freq = (float)freq_da_suonare;
   int seconds = 10;
-  // unsigned sample_rate = 22050, valore a caso
   unsigned sample_rate = 44100;
   double my_pi = 3.14159;
   size_t buf_size = seconds * sample_rate;
-  // allocate PCM (pulse code modulation) audio buffer
+  // alloco PCM (pulse code modulation) audio buffer
   short *samples = malloc(sizeof(short) * buf_size);
-  float cccc=32760;
+  float weaken=32760; //attenuare la nota
   printf("La frequenza della nota è %f\n", freq);
   int i = 0;
   for (; i < buf_size; ++i)
   {
-    samples[i] = (cccc) * sin((2.f * my_pi * (freq)) / sample_rate * i);
-    cccc-=0.2;
-    //sample_rate-=1;
-    //freq+=0.1;
+    samples[i] = (weaken) * sin((2.f * my_pi * (freq)) / sample_rate * i);
+    weaken-=0.2;
   }
 
-  
   //carico il buffer con OpenAL
   alBufferData(internal_buffer[ty], AL_FORMAT_MONO16, samples, buf_size, sample_rate);
-  error_control("populating alBufferData");
 
-  free(samples);
+  free(samples); //free dell'onda
 
   // inizializzazione della sorgente del suono e play del buffer
   alGenSources(1, &streaming_source[ty]);
   alSourcei(streaming_source[ty], AL_BUFFER, internal_buffer[ty]);
   alSourcePlay(streaming_source[ty]);
-
   alGetSourcei(streaming_source[ty], AL_SOURCE_STATE, &current_playing_state[ty]);
-  error_control("alGetSourcei-1 AL_SOURCE_STATE");
+
   sem_post(&mysem);
+
   while (AL_PLAYING == current_playing_state[ty])
   {
     if (alive[ty] == 0)
@@ -307,27 +297,13 @@ void *play_note(void *argomenti_thread)
       pthread_exit(NULL);
     }
     alGetSourcei(streaming_source[ty], AL_SOURCE_STATE, &current_playing_state[ty]);
-    error_control("alGetSourcei-2 AL_SOURCE_STATE");
   }
   printf("end of playing\n");
-  //dealloco la struct OpenAL
   alive[ty] = 0;
   //dealloco la struct OpenAL
   free(arg);
   exit_openal(ty);
-  pthread_exit(NULL); //sta cosa è da vedere per la cosa del segfault
-}
-
-int error_control(char *errore)
-{
-  ALenum errore_openal;
-  errore_openal = alGetError();
-  if (AL_NO_ERROR != errore_openal)
-  {
-    printf("ERROR - %s  (%s)\n", alGetString(errore_openal), errore);
-    return errore_openal;
-  }
-  return 0;
+  pthread_exit(NULL);
 }
 
 void exit_openal(int ty)
@@ -336,7 +312,7 @@ void exit_openal(int ty)
   alSourceStopv(1, &streaming_source[ty]);
   alSourcei(streaming_source[ty], AL_BUFFER, 0);
   // Chiudo tutto
-  alDeleteSources(1, &streaming_source[ty]); //da cambiare le size perché misà che è 4
+  alDeleteSources(1, &streaming_source[ty]);
   alcMakeContextCurrent(NULL);
   alcDestroyContext(openal_output_context[ty]);
   alcCloseDevice(openal_output_device);

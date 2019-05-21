@@ -31,7 +31,6 @@ int check_last_synchro_param(int fd);
 void PlaySound(Tone* nota);
 void* play_note(void* x);
 void inizializza_openal_struct(int ty);
-int error_control(char* errore);
 void exit_openal(int ty);
 
 Tone* deserialize(char* buffer);
