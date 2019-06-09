@@ -15,7 +15,7 @@ char buffer[sizeof(Tone)];
 pthread_t threads[4];
 sem_t mysem;
 
-int alive[4] = {0, 0, 0, 0};
+int alive[4] = {0, 0, 0, 0}; //poichè abbiamo solo 4 tasti
 
 int main(int argc, char **argv)
 {
@@ -47,7 +47,11 @@ int main(int argc, char **argv)
   usleep(1000000);
   printf("FRANCESCO MOLFESE\n");
   usleep(1000000);
-  printf("PREMI PER UN TASTO SULLA BOARD PER INZIARE\n");
+  printf("NOTE DISPONIBILI: D,R,M,F\n");
+  usleep(1000000);
+  printf("FREQUENZE: DO = 262 Hz, RE = 293 Hz, MI = 329 Hz, FA = 349 Hz\n");
+  usleep(1000000);
+  printf("PREMI PER UN TASTO SULLA BOARD PER INZIARE, CTRL-C PER TERMINARE\n\n\n");
 
   while (1)
   {
@@ -78,8 +82,10 @@ int main(int argc, char **argv)
         printf("COMPONENTI DEL GRUPPO:\n");
         printf("FRANCESCO DOUGLAS SCOTTI DI VIGOLENO\n");
         printf("FRANCESCO MOLFESE\n");
-        printf("PREMI PER UN TASTO SULLA BOARD PER INZIARE\n\n\n\n\n");
-        printf("La nota è %c\n", nota->nota);
+        printf("NOTE DISPONIBILI: D,R,M,F\n");
+        printf("FREQUENZE: DO = 262 Hz, RE = 293 Hz, MI = 329 Hz, FA = 349 Hz\n");
+        printf("PREMI PER UN TASTO SULLA BOARD PER INZIARE, CTRL-C PER TERMINARE\n\n\n");
+        printf("La frequenza della nota che sta suonando è %d\n", nota->nota);
         printf("Il campo on della nota è settato a %d\n", nota->on);
         //una volta resi noti i valori, procedo alla produzione del pcm
         PlaySound(nota);
@@ -107,7 +113,8 @@ int serial_set_interface_attribs(int fd, int speed, int parity)
   tty.c_lflag &= ~(ICANON | IEXTEN | ISIG);
   tty.c_cflag &= ~(PARENB);
   tty.c_cflag |= CS8;
-  tty.c_cc[VMIN] = 2;
+  //tty.c_cc[VMIN] = 2;
+  tty.c_cc[VMIN] = sizeof(Tone);
 
   if (tcsetattr(fd, TCSAFLUSH, &tty) != 0)
   {
@@ -207,29 +214,8 @@ int check_last_synchro_param(int fd)
 //infine chiamata per suonare la nota effettiva
 void PlaySound(Tone *nota)
 {
-  int freq_da_suonare;
-  int i;
-  switch (nota->nota)
-  {
-  case 'D':
-    freq_da_suonare = 262;
-    i = 0;
-    break;
-  case 'R':
-    freq_da_suonare = 293;
-    i = 1;
-    break;
-  case 'M':
-    i = 2;
-    freq_da_suonare = 329;
-    break;
-  case 'F':
-    freq_da_suonare = 349;
-    i = 3;
-    break;
-  default:
-    break;
-  }
+  int i = nota->tasto;
+
   if (nota->on == 1)
   {
     alive[i] = 0;
@@ -248,7 +234,8 @@ void PlaySound(Tone *nota)
     alive[i] = 1;
     thread_args *arg = malloc(sizeof(thread_args));
     arg->nota = nota;
-    arg->freq = freq_da_suonare;
+    //arg->freq = freq_da_suonare;
+    arg->freq = nota->nota;
     arg->i = i;
     printf("aggiornato il thread:%d\n", i);
     pthread_create(&threads[i], NULL, &play_note, arg);
@@ -280,7 +267,7 @@ void *play_note(void *argomenti_thread)
   //prendo il valore della nota e lo converto a float per generare
   //un'onda sinusoidale
   float freq = (float)freq_da_suonare;
-  int seconds = 10;
+  int seconds = 10; //per avere note infinite basta mettere un altro while prima del while dove controlliamo se la nota sta ancora suonando
   unsigned sample_rate = 44100;
   double my_pi = 3.14159;
   size_t buf_size = seconds * sample_rate;
@@ -351,18 +338,26 @@ void intHandler()
     printf("[");
     for (j = 0; j < 25 * (i + 1); j++)
     {
-      usleep(10000);
-      printf("#");
-      fflush(NULL);
+      alive[i] = 0;
+      pthread_join(threads[i], NULL);
+      if (j == 50)
+        printf("%d%%", (i + 1) * 25);
+      else
+      {
+        usleep(10000);
+        printf("#");
+        fflush(NULL);
+      }
     }
     for (; j < 100; j++)
     {
-      printf(" ");
+      if (j == 50)
+        printf("%d%%", (i + 1) * 25);
+      else
+        printf(" ");
     }
     printf("]");
     fflush(NULL);
-    alive[i] = 0;
-    pthread_join(threads[i], NULL);
   }
 
   sem_destroy(&mysem);

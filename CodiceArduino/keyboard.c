@@ -13,18 +13,25 @@ int main(void)
   DDRF &= ~mask;
   PORTF |= mask;
 
+
+  //modificare qua per cambiare le note da eseguire
   Tone toneStructVector[8];
-  toneStructVector[2].nota = 'F';
+  toneStructVector[2].nota = 349;
   toneStructVector[2].on = 0;
+  toneStructVector[2].tasto=0;
 
-  toneStructVector[3].nota = 'M';
+  toneStructVector[3].nota = 329;
   toneStructVector[3].on = 0;
+  toneStructVector[3].tasto=1;
 
-  toneStructVector[4].nota = 'R';
+  toneStructVector[4].nota = 293;
   toneStructVector[4].on = 0;
+  toneStructVector[4].tasto=2;
 
-  toneStructVector[5].nota = 'D';
+  toneStructVector[5].nota = 262;
   toneStructVector[5].on = 0;
+  toneStructVector[5].tasto=3;
+
 
   uint8_t lettura, lettura_prec;
   lettura = PINF & mask;

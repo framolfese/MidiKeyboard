@@ -7,8 +7,9 @@
 #pragma pack(push,1)
 typedef struct Tone
 {
-    uint8_t nota; 
+    uint16_t nota; 
     uint8_t on;
+    uint8_t tasto;
 } Tone;
 #pragma pack(pop)
 
