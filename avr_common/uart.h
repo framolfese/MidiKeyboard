@@ -1,4 +1,8 @@
 #pragma once
+#include <stdint.h>
 
-void printf_init(void);
-void usart_putchar( char data );
+struct Uart;
+struct Uart* Uart_init(void);
+void Uart_write(struct Uart*, uint8_t);
+uint8_t Uart_available(struct Uart*);
+uint16_t Uart_txFree(struct Uart*);

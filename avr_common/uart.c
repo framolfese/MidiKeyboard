@@ -1,78 +1,86 @@
 #include "uart.h"
-// ********************************************************************************
-// Includes
-// ********************************************************************************
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <stdio.h>
-#include <stdbool.h>
-// ********************************************************************************
-// Macros and Defines
-// ********************************************************************************
-#define BAUD  19200
-#define MYUBRR F_CPU/16/BAUD-1
-// ********************************************************************************
-// Function Prototypes
-// ********************************************************************************
-void usart_init(uint16_t ubrr);
-char usart_getchar( void );
-void usart_putchar( char data );
-void usart_pstr (char *s);
-unsigned char usart_kbhit(void);
-int usart_putchar_printf(char var, FILE *stream);
 
+#define BUF_SIZE 256
 
-static FILE mystdout = FDEV_SETUP_STREAM(usart_putchar_printf, NULL, _FDEV_SETUP_WRITE);
+typedef struct Uart{
+  uint8_t rx_buffer[BUF_SIZE];
+  uint8_t rx_start;
+  uint8_t rx_end;
+  uint8_t rx_size;
 
-// ********************************************************************************
-// usart Related
-// ********************************************************************************
-void usart_init( uint16_t ubrr) {
-    // Set baud rate
-    UBRR0H = (uint8_t)(ubrr>>8);
-    UBRR0L = (uint8_t)ubrr;
+  uint8_t tx_buffer[BUF_SIZE];
+  uint8_t tx_start;
+  uint8_t tx_end;
+  uint8_t tx_size;
+}Uart;
 
-    UCSR0C = _BV(UCSZ01) | _BV(UCSZ00); /* 8-bit data */ 
-    UCSR0B = _BV(RXEN0) | _BV(TXEN0) | _BV(RXCIE0);   /* Enable RX and TX */  
-}
-void usart_putchar(char data) {
-    // Wait for empty transmit buffer
-    while ( !(UCSR0A & (_BV(UDRE0))) );
-    // Start transmission
-    UDR0 = data; 
-}
-char usart_getchar(void) {
-    // Wait for incoming data
-    while ( !(UCSR0A & (_BV(RXC0))) );
-    // Return the data
-    return UDR0;
-}
-unsigned char usart_kbhit(void) {
-    //return nonzero if char waiting polled version
-    unsigned char b;
-    b=0;
-    if(UCSR0A & (1<<RXC0)) b=1;
-    return b;
-}
-void usart_pstr(char *s) {
-    // loop through entire string
-    while (*s) { 
-        usart_putchar(*s);
-        s++;
-    }
-}
- 
-// this function is called by printf as a stream handler
-int usart_putchar_printf(char var, FILE *stream) {
-    // translate \n to \r for br@y++ terminal
-    if (var == '\n') usart_putchar('\r');
-    usart_putchar(var);
-    return 0;
+static Uart uart;
+
+void setBaud19200(void) {
+#define BAUD 19200
+#include <util/setbaud.h>
+UBRR0H = UBRRH_VALUE;
+UBRR0L = UBRRL_VALUE;
+
+#ifdef USE_2X
+UCSR0A |= (1<<U2X0);
+#endif
+#undef BAUD
 }
 
-void printf_init(void){
-  stdout = &mystdout;
-  
-  // fire up the usart
-  usart_init ( MYUBRR );
+struct Uart* Uart_init(void) {
+  cli();
+  setBaud19200();
+  uart.rx_start=0;
+  uart.rx_end=0;
+  uart.rx_size=0;
+  uart.tx_start=0;
+  uart.tx_end=0;
+  uart.tx_size=0;
+  for(int i=0;i<BUF_SIZE;++i)
+    uart.tx_buffer[i]=0xCE;
+
+  UCSR0A=0x00;
+  UCSR0C=(1<<UCSZ01) | (1<<UCSZ00);
+  UCSR0B=(1<<RXEN0) | (1<<TXEN0) | (1<<RXCIE0);
+  sei();
+  return &uart;
+}
+
+void Uart_write(struct Uart* u, uint8_t c) {
+  while(u->tx_size>=BUF_SIZE) {}
+  u->tx_buffer[u->tx_end]=c;
+  u->tx_end++;
+  u->tx_size++;
+  UCSR0B |= (1<<UDRIE0);
+  return;
+}
+
+uint8_t Uart_available(struct Uart* u) {
+  return u->rx_size;
+}
+
+uint16_t Uart_txFree(struct Uart* u) {
+  return BUF_SIZE-u->tx_size;
+}
+
+ISR(USART0_RX_vect) {
+  uint8_t c=UDR0; 
+  if(uart.rx_size<BUF_SIZE) {
+    uart.rx_buffer[uart.rx_end]=c;
+    ++uart.rx_end;
+    uart.rx_size++;
+  }
+}
+
+ISR(USART0_UDRE_vect) {
+  if(!uart.tx_size) { 
+    UCSR0B &= ~(1<<UDRIE0); 
+  } else {
+    UDR0=uart.tx_buffer[uart.tx_start];
+    ++uart.tx_start;
+    --uart.tx_size;
+  }  
 }

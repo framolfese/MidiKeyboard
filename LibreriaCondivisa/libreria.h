@@ -14,4 +14,3 @@ typedef struct Tone
 #pragma pack(pop)
 
 char checkSum(char *buffer, size_t size);
-int sendoverserial(Tone tone);
