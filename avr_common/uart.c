@@ -84,3 +84,4 @@ ISR(USART0_UDRE_vect) {
     --uart.tx_size;
   }  
 }
+//https://github.com/EmanueleGiacomini/SO_Hermes/blob/master/src/arch/atmega2560/uart.c to see a READ/WRITE implementation
